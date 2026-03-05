@@ -1,0 +1,621 @@
+openapi: 3.0.0
+info:
+  title: Australian Geocoding API
+  version: 1.0.0
+  description: |
+    The Australian Geocoding API provides precision address validation and spatial enrichment
+    powered by the **Geocoded National Address File (G-NAF)** — Australia's authoritative
+    database of 16.7 million+ addresses.
+
+    Every geocoded result is enriched with:
+    - **Local Government Area (LGA)** boundaries
+    - **ABS Mesh Block** classifications (2016 & 2021)
+    - **Modified Monash Model (MMM)** remoteness scores (2015, 2019, 2023)
+    - Latitude/longitude coordinates
+
+    ## Authentication
+    The API supports two authentication methods:
+    1. **AWS Cognito JWT token**: Passed as a `Bearer` token in the `Authorization` header.
+    2. **API Key**: Passed in the `x-api-key` header (supported on `/geocode` and `/refresh/health`).
+
+    ## Rate Limits
+    - **Single geocode**: No enforced limit (designed for interactive use)
+    - **Batch geocode**: One active job per user at a time
+
+servers:
+  - url: https://d2l9s94q3vy56m.cloudfront.net
+    description: Unified CloudFront Endpoint — geocoding, batch jobs, and monitoring
+
+tags:
+  - name: Geocoding
+    description: |
+      Validate and geocode Australian addresses. Supports single-address lookups
+      for interactive use and batch CSV processing for bulk workloads.
+  - name: Progress
+    description: Monitor and control data pipeline executions (G-NAF refresh cycles)
+  - name: Scheduling
+    description: Configure automated G-NAF refresh schedules
+  - name: Health
+    description: System component health checks (database, search index, pipeline)
+
+paths:
+  /geocode:
+    post:
+      tags: [Geocoding]
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      summary: Geocode a single address
+      description: |
+        Submit a free-text Australian address and receive ranked matches from the
+        G-NAF database. Each match includes coordinates, confidence score, and
+        spatial enrichment data (LGA, Mesh Block, MMM).
+
+        **Tip:** Lower the `fuzzy_threshold` to find more matches for incomplete
+        or misspelled addresses.
+      operationId: geocodeAddress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [address]
+              properties:
+                address:
+                  type: string
+                  description: Free-text Australian address to geocode
+                  example: "123 George Street, Sydney NSW 2000"
+                fuzzy_threshold:
+                  type: number
+                  description: |
+                    Controls how loosely addresses are matched. Lower values
+                    return more results but may include weaker matches.
+                  default: 0.4
+                  minimum: 0
+                  maximum: 1
+      responses:
+        '200':
+          description: Successful geocoding
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GeocodeMatch'
+                  total_matches:
+                    type: integer
+                    description: Total number of matches found
+                  query:
+                    type: string
+                    description: The original query string
+        '400':
+          description: Invalid request - missing or malformed parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /refresh:
+    get:
+      tags: [Progress]
+      summary: Fetch pipeline progress
+      description: |
+        Retrieves the current progress of pipeline executions.
+        Optionally filter by a specific execution ID.
+      operationId: getProgress
+      parameters:
+        - name: execution_id
+          in: query
+          schema:
+            type: string
+          description: Filter by specific execution ID (optional)
+          example: "abc123-def456-ghi789"
+      responses:
+        '200':
+          description: Progress data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProgressItem'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Progress]
+      summary: Trigger data refresh
+      description: |
+        Initiates a new data refresh pipeline execution.
+        Can run in test mode with a limited percentage of data.
+      operationId: triggerRefresh
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                test_mode:
+                  type: boolean
+                  description: Run in test mode with limited data
+                  default: false
+                limit_percent:
+                  type: integer
+                  description: Percentage of data to process (1-100)
+                  default: 100
+                  minimum: 1
+                  maximum: 100
+      responses:
+        '200':
+          description: Refresh triggered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  execution_id:
+                    type: string
+                    description: The Step Functions execution ID
+                  status:
+                    type: string
+                    enum: [STARTED, PENDING, RUNNING]
+                    example: "STARTED"
+                  message:
+                    type: string
+                    description: Human-readable status message
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /refresh/schedule:
+    get:
+      tags: [Scheduling]
+      summary: Get scheduled refresh configuration
+      description: Retrieves the current scheduled refresh configuration
+      operationId: getSchedule
+      responses:
+        '200':
+          description: Schedule configuration retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleConfig'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags: [Scheduling]
+      summary: Update scheduled refresh
+      description: Updates the scheduled refresh configuration
+      operationId: updateSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleConfig'
+      responses:
+        '200':
+          description: Schedule updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "updated"
+                  message:
+                    type: string
+        '400':
+          description: Invalid schedule configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /refresh/stop:
+    post:
+      tags: [Progress]
+      summary: Stop running execution
+      description: Stops a currently running pipeline execution
+      operationId: stopExecution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [execution_id]
+              properties:
+                execution_id:
+                  type: string
+                  description: The Step Functions execution ID to stop
+      responses:
+        '200':
+          description: Execution stopped successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "stopped"
+                  execution_id:
+                    type: string
+        '400':
+          description: Invalid execution ID or execution not running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /refresh/health:
+    get:
+      tags: [Health]
+      security:
+        - ApiKeyAuth: []
+      summary: Health check
+      description: Returns the health status of the system components
+      operationId: healthCheck
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: System is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /jobs:
+    post:
+      tags: [Geocoding]
+      summary: Create a batch geocoding job
+      description: |
+        Creates a new batch geocoding job. Returns a **presigned S3 upload URL**
+        that you use to upload a CSV file containing addresses.
+
+        **CSV format:** The file must include a header row with at minimum an
+        `address` column. Additional columns are preserved in the output.
+
+        **Workflow:**
+        1. Call this endpoint to get a `job_id` and `upload_url`
+        2. `PUT` your CSV file to the `upload_url` (valid for 15 minutes)
+        3. Poll `GET /jobs/{jobId}` until status is `COMPLETED`
+        4. Download results from the returned `download_url`
+      operationId: createBatchJob
+      responses:
+        '200':
+          description: Job created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                    description: Unique job identifier
+                    example: "batch-job-1234567890"
+                  upload_url:
+                    type: string
+                    description: Presigned S3 URL for CSV upload (valid for 15 minutes)
+                  status:
+                    type: string
+                    enum: [PROCESSING, PENDING]
+                    example: "PROCESSING"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /jobs/{jobId}:
+    get:
+      tags: [Geocoding]
+      summary: Check batch job status
+      description: |
+        Poll this endpoint to check whether a batch geocoding job has finished.
+        Once the status is `COMPLETED`, a `download_url` is included in the
+        response for retrieving the geocoded CSV results.
+      operationId: getBatchJobStatus
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The batch job ID
+      responses:
+        '200':
+          description: Job status retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [PROCESSING, COMPLETED, ERROR, NOT_FOUND]
+                  download_url:
+                    type: string
+                    description: Presigned S3 URL for downloading results (only when COMPLETED)
+                    nullable: true
+                  created_at:
+                    type: string
+                    format: date-time
+                  error_message:
+                    type: string
+                    description: Error details if status is ERROR
+                    nullable: true
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    GeocodeMatch:
+      type: object
+      description: A geocoded address match with spatial enrichment data
+      properties:
+        address:
+          type: string
+          description: The full matched address from the G-NAF database
+        confidence:
+          type: number
+          format: float
+          description: |
+            How closely the input matched this address (0.0–1.0).
+            Scores above 0.8 are strong matches; below 0.5 may be partial.
+          minimum: 0
+          maximum: 1
+        latitude:
+          type: number
+          format: double
+          description: Latitude in WGS 84 (EPSG:4326)
+        longitude:
+          type: number
+          format: double
+          description: Longitude in WGS 84 (EPSG:4326)
+        gnaf_pid:
+          type: string
+          description: |
+            G-NAF Persistent Identifier — a stable, unique ID for this address
+            that persists across G-NAF releases.
+          example: "GANSW716626844"
+        lga_code:
+          type: string
+          description: Local Government Area code (e.g., "LGA11300" for Sydney)
+        mb_code:
+          type: string
+          description: |
+            ABS Mesh Block code — the smallest geographic unit in the
+            Australian Statistical Geography Standard (ASGS).
+        mmm_code:
+          type: string
+          description: |
+            Modified Monash Model classification (1–7).
+            1 = Major city, 7 = Very remote. Used for health workforce planning.
+        locality:
+          type: string
+          description: Suburb or town name
+          example: "SYDNEY"
+        state:
+          type: string
+          description: State or territory abbreviation
+          example: "NSW"
+        postcode:
+          type: string
+          description: Four-digit Australian postcode
+          example: "2000"
+
+    ProgressItem:
+      type: object
+      description: Tracks the progress of a single step within a G-NAF data pipeline execution
+      properties:
+        ExecutionId:
+          type: string
+          description: Unique identifier for this pipeline execution (from AWS Step Functions)
+        StepName:
+          type: string
+          description: Which pipeline stage this entry represents
+          enum:
+            - InitProgress
+            - CheckVersion
+            - DownloadGnaf
+            - S3Ingestion
+            - SyntheticParents
+            - RefreshReferenceData
+            - PreEnrichSpatial
+            - RefreshMaterializedView
+            - IndexOpenSearch
+            - PipelineComplete
+        status:
+          type: string
+          enum: [PENDING, IN_PROGRESS, COMPLETED, ERROR]
+          description: Current status of this pipeline step
+        message:
+          type: string
+          description: Human-readable status message (e.g., "Ingested 2.5M of 16.7M records")
+        start_time:
+          type: string
+          format: date-time
+          description: When this step began executing
+        end_time:
+          type: string
+          format: date-time
+          description: When this step finished (null if still running)
+        last_updated:
+          type: string
+          format: date-time
+          description: Most recent progress update timestamp
+        metadata:
+          type: object
+          description: Step-specific progress details
+          properties:
+            progress_percent:
+              type: number
+              description: Completion percentage (0–100)
+            records_processed:
+              type: integer
+              description: Number of records processed so far
+            total_records:
+              type: integer
+              description: Total records to process in this step
+            estimated_remaining_seconds:
+              type: integer
+              description: Estimated remaining time in seconds
+            estimated_completion_time:
+              type: string
+              format: date-time
+              description: Estimated completion timestamp
+        test_mode:
+          type: boolean
+          description: Whether this is a test mode execution
+
+    ScheduleConfig:
+      type: object
+      description: Scheduled refresh configuration
+      properties:
+        enabled:
+          type: boolean
+          description: Whether scheduled refresh is enabled
+        cron_expression:
+          type: string
+          description: AWS EventBridge schedule expression
+          example: "rate(7 days)"
+        next_run:
+          type: string
+          format: date-time
+          description: Next scheduled run timestamp
+        last_run:
+          type: string
+          format: date-time
+          description: Last run timestamp
+        frequency:
+          type: string
+          description: Human-readable frequency
+          enum: [daily, weekly, monthly]
+        day_of_week:
+          type: string
+          description: Day of week for weekly schedules
+          enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+          nullable: true
+        time:
+          type: string
+          description: Scheduled time (HH:MM format)
+          example: "02:00"
+
+    HealthStatus:
+      type: object
+      description: System health status
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          description: Overall system health
+        dynamodb:
+          type: string
+          description: DynamoDB connection status
+        stepfunctions:
+          type: string
+          description: Step Functions status
+        opensearch:
+          type: string
+          description: OpenSearch status
+        rds:
+          type: string
+          description: Aurora RDS status
+        timestamp:
+          type: string
+          format: date-time
+          description: Health check timestamp
+
+    Error:
+      type: object
+      description: Error response
+      properties:
+        error:
+          type: string
+          description: Error message
+        message:
+          type: string
+          description: Detailed error description
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details

@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.env
+frontend/src/amplifyconfiguration.json
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+*.local
+
+# Terraform
+**/.terraform/
+terraform/terraform.tfstate*
+terraform/bootstrap/terraform.tfstate*
+terraform/terraform.tfstate.backup
+*.tfplan
+*.tfvars
+!terraform/terraform.tfvars.example
+
+# Lambda build artifacts
+*.zip
+
+# Archive (non-essential files moved here for cleanup)
+archive/
+
+# Development docs & journals (kept locally, not committed)
+docs/
+memory-bank/
+
+# Dev/Debug artifacts
+payload.txt
+response.json
+_ul
+temp_*.py
+temp_*.zip
+update_progress.zip
+validator.zip
+zip_lambda.py
+debug_history.json
+
+# Data (large raw data)
+temp_data/
+logs/

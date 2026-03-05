@@ -1,0 +1,106 @@
+/* Login container styles */
+.login-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Animated background container */
+.animated-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Radar animation container - constrained to right side (since form is on left) */
+.radar-container {
+  position: absolute;
+  top: 50%;
+  right: 20%; 
+  transform: translate(50%, -50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 153, 0, 0.3); /* AWS Orange */
+  overflow: hidden;
+}
+
+/* Radar sweep animation */
+.radar-sweep {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 400px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 153, 0, 1) 0%,
+    rgba(255, 153, 0, 0.8) 30%,
+    rgba(255, 153, 0, 0.4) 70%,
+    transparent 100%
+  );
+  transform-origin: bottom center;
+  transform: translate(-50%, -100%) rotate(0deg);
+  animation: radarSweep 4s linear infinite;
+  box-shadow: 0 0 10px rgba(255, 153, 0, 0.5);
+}
+
+/* Radar circles */
+.radar-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 2px solid rgba(255, 153, 0, 0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radar-circle-1 {
+  width: 200px;
+  height: 200px;
+  animation: radarPulse 4s ease-in-out infinite;
+}
+
+.radar-circle-2 {
+  width: 400px;
+  height: 400px;
+  animation: radarPulse 4s ease-in-out infinite 1s;
+}
+
+.radar-circle-3 {
+  width: 600px;
+  height: 600px;
+  animation: radarPulse 4s ease-in-out infinite 2s;
+}
+
+.radar-circle-4 {
+  width: 800px;
+  height: 800px;
+  animation: radarPulse 4s ease-in-out infinite 3s;
+}
+
+@keyframes radarSweep {
+  0% { transform: translate(-50%, -100%) rotate(0deg); opacity: 1; }
+  100% { transform: translate(-50%, -100%) rotate(360deg); opacity: 1; }
+}
+
+@keyframes radarPulse {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* Pulse effect for feature badges */
+.feature-badge {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}

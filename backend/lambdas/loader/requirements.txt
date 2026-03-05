@@ -1,0 +1,6 @@
+psycopg2-binary
+boto3
+smart-open
+opensearch-py
+requests
+requests-aws4auth
