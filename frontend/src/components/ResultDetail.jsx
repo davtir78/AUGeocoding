@@ -158,19 +158,26 @@ const ResultDetail = ({ result }) => {
                         )}
 
                         {/* Mesh Block */}
-                        {result.mesh_block && result.mesh_block.length > 0 && (
-                            <>
-                                <Divider sx={{ my: 1, opacity: 0.6 }} />
-                                <Typography variant="caption" display="block" color="text.secondary" fontWeight="700" sx={{ mb: 0.5, fontSize: '0.6rem' }}>
-                                    ABS MESH BLOCK
-                                </Typography>
-                                {result.mesh_block.map((mb, idx) => (
-                                    <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Divider sx={{ my: 1, opacity: 0.6 }} />
+                        <Typography variant="caption" display="block" color="text.secondary" fontWeight="700" sx={{ mb: 0.5, fontSize: '0.6rem' }}>
+                            ABS MESH BLOCK
+                        </Typography>
+                        {result.mesh_block && result.mesh_block.length > 0 ? (
+                            result.mesh_block.map((mb, idx) => (
+                                <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <Chip label={mb.mb_code} size="small" variant="outlined" sx={{ fontFamily: 'monospace', fontSize: '0.65rem' }} />
-                                        <Typography variant="body2">{mb.category}</Typography>
+                                        <Typography variant="body2" fontWeight="700">{mb.category}</Typography>
                                     </Box>
-                                ))}
-                            </>
+                                    {mb.sa2_name && (
+                                        <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600, pl: 0.5 }}>
+                                            {mb.sa2_name} (SA2)
+                                        </Typography>
+                                    )}
+                                </Box>
+                            ))
+                        ) : (
+                            <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mb: 0.5 }}>No Mesh Block data</Typography>
                         )}
                     </Paper>
                 </Box>

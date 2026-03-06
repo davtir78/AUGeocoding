@@ -92,12 +92,8 @@ def process_record(record):
             if 'address' in col.lower():
                 address_col_idx = i
                 break
-
-        # Collapse all original columns into a single input_address for output
-        output_original_header = ['input_address']
-        data_rows = [[' '.join(r).strip()] for r in data_rows]
-        header = output_original_header
-        address_col_idx = 0
+        
+        # Keep original data_rows and header intact
     else:
         # Plain text: one address per line
         header = ['input_address']
@@ -149,6 +145,9 @@ def process_record(record):
         'geocode_mmm_2015',
         'geocode_mmm_2019',
         'geocode_mmm_2023',
+        'geocode_mb_code',
+        'geocode_mb_category',
+        'geocode_sa2_name',
     ]
     writer = csv.writer(output_buff)
     writer.writerow(output_header)
@@ -176,27 +175,32 @@ def process_record(record):
         mmm_2019 = mmm_by_year.get('2019', '')
         mmm_2023 = mmm_by_year.get('2023', '')
             
-        # Address component tokens
-        t = res.get('tokens') or {}
-        pt = res.get('parsed_tokens') or {}
-        
-        # Use G-NAF values, fallback to input-parsed values if G-NAF matched the base building
-        unit      = t.get('flat') or pt.get('flat', '')
-        level     = t.get('level') or pt.get('level', '')
-        number    = t.get('number', '')
-        street_name = t.get('street_name', '')
-        street_type = t.get('street_type', '')
-        if t.get('street_suffix'):
-            street_type = f"{street_type} {t['street_suffix']}".strip()
-        suburb    = t.get('locality_name') or t.get('locality', '')
-        state     = t.get('state', '')
-        postcode  = t.get('postcode', '')
-
+        # Parsed Address Components
+        tokens = res.get('parsed_tokens', {})
+        unit = tokens.get('flat', '')
+        level = tokens.get('level', '')
+        number = tokens.get('number', '')
+        street_name = tokens.get('street', '')
+        street_type = tokens.get('type', '')
+        suburb = tokens.get('locality', '')
+        state = tokens.get('state', '')
+        postcode = tokens.get('postcode', '')
+            
+        # Mesh Block
+        mb_code = ''
+        mb_category = ''
+        sa2_name = ''
+        if res.get('mesh_block'):
+            mb_code = res['mesh_block'][0].get('mb_code', '')
+            mb_category = res['mesh_block'][0].get('category', '')
+            sa2_name = res['mesh_block'][0].get('sa2_name', '')
+            
         status = 'MATCHED' if matched_addr else 'NO_MATCH'
         new_row = row + [
             status, matched_addr, confidence, pid, lat, lon,
             unit, level, number, street_name, street_type, suburb, state, postcode,
-            lga_name, lga_code, mmm_2015, mmm_2019, mmm_2023
+            lga_name, lga_code, mmm_2015, mmm_2019, mmm_2023,
+            mb_code, mb_category, sa2_name
         ]
         writer.writerow(new_row)
         

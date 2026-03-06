@@ -130,23 +130,26 @@ def tokenize_address(raw: str) -> dict:
             parts.pop(0)  # skip the range end
 
     # Extract street type (scan from end)
+    type_idx = -1
     for i in range(len(parts) - 1, -1, -1):
         if parts[i].lower() in _STREET_TYPES:
-            tokens['type'] = parts.pop(i).upper()
+            tokens['type'] = parts[i].upper()
+            type_idx = i
             break
 
-    # Remaining parts: street name tokens, then locality
-    # Heuristic: if there are 2+ tokens left, last one(s) are locality
-    if len(parts) >= 3:
-        # Try to find where street name ends and locality begins
-        # Simple heuristic: last token(s) after the street are locality
-        tokens['street'] = ' '.join(parts[:-1])
-        tokens['locality'] = parts[-1]
-    elif len(parts) == 2:
-        tokens['street'] = parts[0]
-        tokens['locality'] = parts[1]
-    elif len(parts) == 1:
-        tokens['street'] = parts[0]
+    if type_idx != -1:
+        # Everything before type is street, everything after is locality
+        tokens['street'] = ' '.join(parts[:type_idx])
+        tokens['locality'] = ' '.join(parts[type_idx + 1:])
+        # Clean up tokens list for query logic if needed
+        # (Though we've already extracted what we need)
+    else:
+        # Fallback to old heuristic if no street type found
+        if len(parts) >= 2:
+            tokens['street'] = ' '.join(parts[:-1])
+            tokens['locality'] = parts[-1]
+        elif len(parts) == 1:
+            tokens['street'] = parts[0]
 
     # Build clean query for full-text search
     tokens['query'] = raw.strip()
@@ -258,10 +261,10 @@ def build_os_query(tokens: dict, raw_query: str) -> dict:
         if tokens.get('level'):
             should_clauses.append({"term": {"level_number": {"value": tokens['level'], "boost": 50}}})
 
-    # Exact Street Name Boost
+    # Exact Street Name Boost - Very high to ensure we stick to the right road
     if tokens.get('street'):
         should_clauses.append({
-            "term": {"street_name.keyword": {"value": tokens['street'].upper(), "boost": 1500.0}}
+            "term": {"street_name.keyword": {"value": tokens['street'].upper(), "boost": 2000.0}}
         })
 
     query = {
@@ -270,8 +273,7 @@ def build_os_query(tokens: dict, raw_query: str) -> dict:
             "bool": {
                 "must": must_clauses,
                 "should": should_clauses,
-                "filter": filter_clauses,
-                "minimum_should_match": 1
+                "filter": filter_clauses
             }
         }
     }
@@ -292,9 +294,9 @@ def enrich_spatial(lon: float, lat: float) -> dict:
             cur.execute(f"""
                 SELECT year, mmm_code
                 FROM mmm
-                WHERE ST_Contains(geom, {point_sql})
-                ORDER BY year DESC;
-            """, (lon, lat))
+                WHERE geom <-> {point_sql} < 0.0005
+                ORDER BY year DESC, geom <-> {point_sql} ASC;
+            """, (lon, lat, lon, lat))
             enrichment['mmm_regions'] = [
                 {"year": r[0], "mmm_code": r[1]} for r in cur.fetchall()
             ]
@@ -303,21 +305,28 @@ def enrich_spatial(lon: float, lat: float) -> dict:
             cur.execute(f"""
                 SELECT lga_code, lga_name, state_name
                 FROM lga
-                WHERE ST_Contains(geom, {point_sql})
+                WHERE geom <-> {point_sql} < 0.0005
+                ORDER BY geom <-> {point_sql} ASC
                 LIMIT 1;
-            """, (lon, lat))
+            """, (lon, lat, lon, lat))
             enrichment['lga'] = [
                 {"lga_code": r[0], "lga_name": r[1], "state": r[2]}
                 for r in cur.fetchall()
             ]
 
-            # Mesh Block
+            # Mesh Block - Proximity-based lookup (solves G-NAF/ABS alignment gaps)
+            # 50m radius bound + snap to closest
             cur.execute(f"""
                 SELECT mb_code, mb_category, sa2_name
                 FROM mesh_block
-                WHERE ST_Contains(geom, {point_sql})
+                WHERE ST_DWithin(
+                    geom::geography, 
+                    {point_sql}::geography, 
+                    50
+                )
+                ORDER BY geom <-> {point_sql}
                 LIMIT 1;
-            """, (lon, lat))
+            """, (lon, lat, lon, lat))
             enrichment['mesh_block'] = [
                 {"mb_code": r[0], "category": r[1], "sa2_name": r[2]}
                 for r in cur.fetchall()
