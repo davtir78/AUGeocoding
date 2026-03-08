@@ -107,110 +107,102 @@ resource "aws_route_table_association" "private_b" {
 }
 
 # --- VPC Endpoints for Scale-to-Zero Architecture (No NAT Gateway) ---
+# ============================================================================
+# Zero-VPC Cost Optimization Notes
+# ============================================================================
+# All VPC Interface Endpoints (Secrets Manager, Lambda, ECR, CloudWatch Logs)
+# have been removed to eliminate costs (~$72/month).
+#
+# SECURITY NOTE:
+# Connectivity to these services now happens over the public internet via the
+# Lambda runtime's default internet access. This is secured by:
+# 1. TLS Encryption (standard for all AWS public endpoints)
+# 2. IAM Authentication (SigV4) - Only authorized roles can call these APIs.
+#
+# If strict network isolation is required (e.g., ISM compliance), you should:
+# 1. Restore the VPC Interface Endpoints.
+# 2. Put the Lambdas back into private subnets.
+# ============================================================================
 
-# Security Group for Interface Endpoints (Secrets Manager)
-resource "aws_security_group" "endpoints_sg" {
-  name        = "aws-geocoding-endpoints-sg"
-  description = "Allow HTTPS from Lambda"
+# Security Group for Interface Endpoints
+resource "aws_security_group" "vpc_endpoints_sg" {
+  count       = var.use_vpc ? 1 : 0
+  name        = "aws-geocoding-vpc-endpoints-sg"
+  description = "Security group for VPC Endpoints"
   vpc_id      = aws_vpc.main.id
 
   ingress {
     from_port       = 443
     to_port         = 443
     protocol        = "tcp"
-    security_groups = [aws_security_group.lambda_sg.id]
+    security_groups = [aws_security_group.lambda_sg.id, aws_security_group.ecs_sg.id]
+  }
+
+  tags = {
+    Name = "aws-geocoding-vpc-endpoints-sg"
   }
 }
 
-# S3 Gateway Endpoint (Free, High Throughput)
+locals {
+  target_subnets = var.use_vpc ? (var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]) : []
+}
+
+# S3 Gateway Endpoint
 resource "aws_vpc_endpoint" "s3" {
+  count             = var.use_vpc ? 1 : 0
   vpc_id            = aws_vpc.main.id
-  service_name      = "com.amazonaws.ap-southeast-2.s3"
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
   vpc_endpoint_type = "Gateway"
-
-  route_table_ids = [aws_route_table.private.id]
-
-  tags = {
-    Name = "aws-geocoding-s3-endpoint"
-  }
+  route_table_ids   = [aws_route_table.private.id]
 }
 
-# Secrets Manager Interface Endpoint (Enables key retrieval without NAT)
-resource "aws_vpc_endpoint" "secrets" {
+# DynamoDB Gateway Endpoint (For pipeline progress tracking)
+resource "aws_vpc_endpoint" "dynamodb" {
+  count             = var.use_vpc ? 1 : 0
   vpc_id            = aws_vpc.main.id
-  service_name      = "com.amazonaws.ap-southeast-2.secretsmanager"
-  vpc_endpoint_type = "Interface"
-
-  subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-  security_group_ids = [aws_security_group.endpoints_sg.id]
-
-  private_dns_enabled = true
-
-  tags = {
-    Name = "aws-geocoding-secrets-endpoint"
-  }
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.dynamodb"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.private.id]
 }
 
-# Lambda Interface Endpoint (Enables self-invocation without NAT)
-resource "aws_vpc_endpoint" "lambda" {
-  vpc_id            = aws_vpc.main.id
-  service_name      = "com.amazonaws.ap-southeast-2.lambda"
-  vpc_endpoint_type = "Interface"
-
-  subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-  security_group_ids = [aws_security_group.endpoints_sg.id]
-
+# Secrets Manager, Logs, ECR Interface Endpoints
+resource "aws_vpc_endpoint" "secretsmanager" {
+  count               = var.use_vpc ? 1 : 0
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = local.target_subnets
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg[0].id]
   private_dns_enabled = true
-
-  tags = {
-    Name = "aws-geocoding-lambda-endpoint"
-  }
 }
 
-# ECR API Endpoint (for pulling images)
-resource "aws_vpc_endpoint" "ecr_api" {
-  vpc_id            = aws_vpc.main.id
-  service_name      = "com.amazonaws.ap-southeast-2.ecr.api"
-  vpc_endpoint_type = "Interface"
-
-  subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-  security_group_ids = [aws_security_group.endpoints_sg.id]
-
-  private_dns_enabled = true
-
-  tags = {
-    Name = "aws-geocoding-ecr-api-endpoint"
-  }
-}
-
-# ECR DKR Endpoint (for pulling layers)
-resource "aws_vpc_endpoint" "ecr_dkr" {
-  vpc_id            = aws_vpc.main.id
-  service_name      = "com.amazonaws.ap-southeast-2.ecr.dkr"
-  vpc_endpoint_type = "Interface"
-
-  subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-  security_group_ids = [aws_security_group.endpoints_sg.id]
-
-  private_dns_enabled = true
-
-  tags = {
-    Name = "aws-geocoding-ecr-dkr-endpoint"
-  }
-}
-
-# CloudWatch Logs Endpoint (for shipping logs)
 resource "aws_vpc_endpoint" "logs" {
-  vpc_id            = aws_vpc.main.id
-  service_name      = "com.amazonaws.ap-southeast-2.logs"
-  vpc_endpoint_type = "Interface"
-
-  subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-  security_group_ids = [aws_security_group.endpoints_sg.id]
-
+  count               = var.use_vpc ? 1 : 0
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.logs"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = local.target_subnets
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg[0].id]
   private_dns_enabled = true
-
-  tags = {
-    Name = "aws-geocoding-logs-endpoint"
-  }
 }
+
+resource "aws_vpc_endpoint" "ecr_api" {
+  count               = var.use_vpc ? 1 : 0
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = local.target_subnets
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg[0].id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  count               = var.use_vpc ? 1 : 0
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = local.target_subnets
+  security_group_ids  = [aws_security_group.vpc_endpoints_sg[0].id]
+  private_dns_enabled = true
+}
+

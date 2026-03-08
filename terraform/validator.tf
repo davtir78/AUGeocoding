@@ -18,17 +18,22 @@ resource "aws_lambda_function" "validator_lambda" {
   timeout       = 30   # OpenSearch queries should be <1s
   memory_size   = 1024 # Reduced: libpostal removed, OpenSearch queries are lightweight
 
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_group_ids = [aws_security_group.lambda_sg.id]
+  dynamic "vpc_config" {
+    for_each = var.use_vpc ? [1] : []
+    content {
+      subnet_ids         = var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]
+      security_group_ids = [aws_security_group.lambda_sg.id]
+    }
   }
 
   environment {
     variables = {
       DB_SECRET_ARN       = aws_rds_cluster.main.master_user_secret[0].secret_arn
+      DB_CLUSTER_ARN      = aws_rds_cluster.main.arn
       DB_NAME             = aws_rds_cluster.main.database_name
       DB_HOST             = aws_rds_cluster.main.endpoint
       OPENSEARCH_ENDPOINT = trimprefix(aws_opensearch_domain.geocoding.endpoint, "https://")
+      USE_DATA_API        = var.use_vpc ? "false" : "true"
     }
   }
 }
@@ -65,14 +70,14 @@ resource "aws_iam_policy" "validator_policy" {
         Effect   = "Allow"
         Resource = "arn:aws:logs:*:*:*"
       },
+      # RDS Data API Access (Zero-VPC)
       {
         Action = [
-          "ec2:CreateNetworkInterface",
-          "ec2:DescribeNetworkInterfaces",
-          "ec2:DeleteNetworkInterface"
+          "rds-data:ExecuteStatement",
+          "rds-data:BatchExecuteStatement"
         ]
         Effect   = "Allow"
-        Resource = "*"
+        Resource = aws_rds_cluster.main.arn
       },
       {
         Action = [
@@ -98,4 +103,9 @@ resource "aws_iam_policy" "validator_policy" {
 resource "aws_iam_role_policy_attachment" "validator_attach" {
   role       = aws_iam_role.validator_role.name
   policy_arn = aws_iam_policy.validator_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "validator_vpc_attach" {
+  role       = aws_iam_role.validator_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }

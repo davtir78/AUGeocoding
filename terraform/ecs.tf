@@ -87,10 +87,13 @@ resource "aws_ecs_task_definition" "loader" {
       entryPoint = ["python", "/var/task/index.py"]
 
       environment = [
-        { name = "DB_HOST", value = aws_rds_cluster.main.endpoint },
+        { name = "DB_CLUSTER_ARN", value = aws_rds_cluster.main.arn },
         { name = "DB_NAME", value = aws_rds_cluster.main.database_name },
+        { name = "DB_HOST", value = aws_rds_cluster.main.endpoint },
         { name = "OPENSEARCH_ENDPOINT", value = aws_opensearch_domain.geocoding.endpoint },
-        { name = "DB_SECRET_ARN", value = aws_rds_cluster.main.master_user_secret[0].secret_arn }
+        { name = "DB_SECRET_ARN", value = aws_rds_cluster.main.master_user_secret[0].secret_arn },
+        { name = "AWS_REGION", value = data.aws_region.current.name },
+        { name = "USE_DATA_API", value = var.use_vpc ? "false" : "true" }
       ]
 
       secrets = [

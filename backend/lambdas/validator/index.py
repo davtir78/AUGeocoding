@@ -18,36 +18,89 @@ REGION = os.environ.get('AWS_REGION', 'ap-southeast-2')
 OPENSEARCH_ENDPOINT = os.environ.get('OPENSEARCH_ENDPOINT')
 
 # ─── Clients (initialised once per container) ───────────────────
+# Use RDS Data API for VPC-less database access (Cost Optimized)
+rds_client = boto3.client('rds-data', region_name=REGION)
 secrets_client = boto3.client('secretsmanager', region_name=REGION)
-_db_conn = None
 _os_client = None
 
+# Note: DB_CLUSTER_ARN must be provided in environment variables
+DB_CLUSTER_ARN = os.environ.get('DB_CLUSTER_ARN')
 
-# ─── Helpers ─────────────────────────────────────────────────────
-def get_db_connection():
-    """Return a reusable psycopg2 connection (for MMM enrichment)."""
-    global _db_conn
-    if _db_conn and not _db_conn.closed:
-        return _db_conn
-    secret = json.loads(
-        secrets_client.get_secret_value(SecretId=DB_SECRET_ARN)['SecretString']
-    )
-    _db_conn = psycopg2.connect(
-        host=DB_HOST,
-        port=secret.get('port', 5432),
-        user=secret['username'],
-        password=secret['password'],
-        dbname=DB_NAME,
-    )
-    logger.info("DB connection established.")
-    return _db_conn
+USE_DATA_API = os.environ.get('USE_DATA_API', 'true').lower() == 'true'
 
+_pg_conn = None
+
+def get_pg_conn():
+    global _pg_conn
+    if _pg_conn:
+        return _pg_conn
+    
+    secret = secrets_client.get_secret_value(SecretId=DB_SECRET_ARN)
+    creds = json.loads(secret['SecretString'])
+    import psycopg2
+    try:
+        _pg_conn = psycopg2.connect(
+            host=DB_HOST,
+            dbname=DB_NAME,
+            user=creds['username'],
+            password=creds['password'],
+            connect_timeout=5
+        )
+        return _pg_conn
+    except psycopg2.OperationalError as e:
+        logger.error(f"Failed to connect to direct RDS cluster at {DB_HOST}: {e}")
+        raise
+
+def execute_rds_query(sql, params=None):
+    """Execute a query via psycopg2 (VPC) or Aurora Data API (Zero-VPC) and return results as lists."""
+    if not USE_DATA_API:
+        conn = get_pg_conn()
+        with conn.cursor() as cur:
+            cur.execute(sql, params)
+            return cur.fetchall()
+
+    parsed_params = []
+    if params:
+        for p in params:
+            name = f'p{len(parsed_params)}'
+            if isinstance(p, float):
+                parsed_params.append({'name': name, 'value': {'doubleValue': p}})
+            elif isinstance(p, int):
+                parsed_params.append({'name': name, 'value': {'longValue': p}})
+            elif p is None:
+                parsed_params.append({'name': name, 'value': {'isNull': True}})
+            else:
+                parsed_params.append({'name': name, 'value': {'stringValue': str(p)}})
+    
+    for i in range(len(parsed_params)):
+        sql = sql.replace('%s', f':p{i}', 1)
+
+    response = rds_client.execute_statement(
+        resourceArn=DB_CLUSTER_ARN,
+        secretArn=DB_SECRET_ARN,
+        database=DB_NAME,
+        sql=sql,
+        parameters=parsed_params
+    )
+    
+    rows = []
+    for record in response.get('records', []):
+        row = []
+        for field in record:
+            val = list(field.values())[0] if field else None
+            row.append(val)
+        rows.append(row)
+    return rows
 
 def get_os_client():
-    """Return a reusable OpenSearch client."""
+    """
+    Return a reusable OpenSearch client.
+    In Zero-VPC mode, this connects to a Public Endpoint secured by IAM (SigV4).
+    """
     global _os_client
     if _os_client is not None:
         return _os_client
+    
     credentials = boto3.Session().get_credentials()
     auth = AWSV4SignerAuth(credentials, REGION, 'es')
     _os_client = OpenSearch(
@@ -58,7 +111,7 @@ def get_os_client():
         connection_class=RequestsHttpConnection,
         timeout=25,
     )
-    logger.info("OpenSearch client created.")
+    logger.info("OpenSearch client created with IAM/SigV4 auth.")
     return _os_client
 
 
@@ -250,11 +303,11 @@ def build_os_query(tokens: dict, raw_query: str) -> dict:
             "term": {"primary_secondary": {"value": "P", "boost": 400.0}}
         })
         should_clauses.append({
-            "term": {"is_base_address": {"value": True, "boost": 300.0}}
+            "term": {"is_base_address": {"value": True, "boost": 1000.0}}
         })
     else:
         should_clauses.append({
-            "term": {"is_base_address": {"value": False, "boost": 100.0}}
+            "term": {"is_base_address": {"value": False, "boost": 200.0}}
         })
         if tokens.get('flat'):
             should_clauses.append({"term": {"flat_number": {"value": tokens['flat'], "boost": 50}}})
@@ -287,50 +340,52 @@ def enrich_spatial(lon: float, lat: float) -> dict:
     """Perform PostGIS point-in-polygon lookups for MMM, LGA, and Mesh Block."""
     enrichment = {"mmm_regions": [], "lga": [], "mesh_block": []}
     try:
-        conn = get_db_connection()
         point_sql = "ST_SetSRID(ST_Point(%s, %s), 4326)"
-        with conn.cursor() as cur:
-            # MMM
-            cur.execute(f"""
-                SELECT year, mmm_code
-                FROM mmm
-                WHERE geom <-> {point_sql} < 0.0005
-                ORDER BY year DESC, geom <-> {point_sql} ASC;
-            """, (lon, lat, lon, lat))
-            enrichment['mmm_regions'] = [
-                {"year": r[0], "mmm_code": r[1]} for r in cur.fetchall()
-            ]
+        
+        # MMM
+        mmm_sql = f"""
+            SELECT year, mmm_code
+            FROM mmm
+            WHERE geom <-> {point_sql} < 0.0005
+            ORDER BY year DESC, geom <-> {point_sql} ASC;
+        """
+        mmm_rows = execute_rds_query(mmm_sql, (lon, lat, lon, lat))
+        enrichment['mmm_regions'] = [
+            {"year": r[0], "mmm_code": r[1]} for r in mmm_rows
+        ]
 
-            # LGA
-            cur.execute(f"""
-                SELECT lga_code, lga_name, state_name
-                FROM lga
-                WHERE geom <-> {point_sql} < 0.0005
-                ORDER BY geom <-> {point_sql} ASC
-                LIMIT 1;
-            """, (lon, lat, lon, lat))
-            enrichment['lga'] = [
-                {"lga_code": r[0], "lga_name": r[1], "state": r[2]}
-                for r in cur.fetchall()
-            ]
+        # LGA
+        lga_sql = f"""
+            SELECT lga_code, lga_name, state_name
+            FROM lga
+            WHERE geom <-> {point_sql} < 0.0005
+            ORDER BY geom <-> {point_sql} ASC
+            LIMIT 1;
+        """
+        lga_rows = execute_rds_query(lga_sql, (lon, lat, lon, lat))
+        enrichment['lga'] = [
+            {"lga_code": r[0], "lga_name": r[1], "state": r[2]}
+            for r in lga_rows
+        ]
 
-            # Mesh Block - Proximity-based lookup (solves G-NAF/ABS alignment gaps)
-            # 50m radius bound + snap to closest
-            cur.execute(f"""
-                SELECT mb_code, mb_category, sa2_name
-                FROM mesh_block
-                WHERE ST_DWithin(
-                    geom::geography, 
-                    {point_sql}::geography, 
-                    50
-                )
-                ORDER BY geom <-> {point_sql}
-                LIMIT 1;
-            """, (lon, lat, lon, lat))
-            enrichment['mesh_block'] = [
-                {"mb_code": r[0], "category": r[1], "sa2_name": r[2]}
-                for r in cur.fetchall()
-            ]
+        # Mesh Block - Proximity-based lookup (solves G-NAF/ABS alignment gaps)
+        # 50m radius bound + snap to closest
+        mb_sql = f"""
+            SELECT mb_code, mb_category, sa2_name
+            FROM mesh_block
+            WHERE ST_DWithin(
+                geom::geography, 
+                {point_sql}::geography, 
+                50
+            )
+            ORDER BY geom <-> {point_sql}
+            LIMIT 1;
+        """
+        mb_rows = execute_rds_query(mb_sql, (lon, lat, lon, lat))
+        enrichment['mesh_block'] = [
+            {"mb_code": r[0], "category": r[1], "sa2_name": r[2]}
+            for r in mb_rows
+        ]
 
     except Exception as e:
         logger.error(f"Spatial enrichment failed for ({lon},{lat}): {e}")

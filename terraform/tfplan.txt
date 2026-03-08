@@ -1,0 +1,1023 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+  ~ update in-place
+  - destroy
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # aws_ecs_task_definition.loader must be replaced
+-/+ resource "aws_ecs_task_definition" "loader" {
+      ~ arn                      = "arn:aws:ecs:ap-southeast-2:657416661258:task-definition/aws-geocoding-loader:8" -> (known after apply)
+      ~ arn_without_revision     = "arn:aws:ecs:ap-southeast-2:657416661258:task-definition/aws-geocoding-loader" -> (known after apply)
+      ~ container_definitions    = jsonencode(
+            [
+              - {
+                  - entryPoint       = [
+                      - "python",
+                      - "/var/task/index.py",
+                    ]
+                  - environment      = [
+                      - {
+                          - name  = "DB_HOST"
+                          - value = "aws-geocoding-aurora-cluster.cluster-cz6264ea4mrg.ap-southeast-2.rds.amazonaws.com"
+                        },
+                      - {
+                          - name  = "DB_NAME"
+                          - value = "geocoder"
+                        },
+                      - {
+                          - name  = "DB_SECRET_ARN"
+                          - value = "arn:aws:secretsmanager:ap-southeast-2:657416661258:secret:rds!cluster-01d7b821-b23e-4643-b2b1-b613931aeac0-RNtoZt"
+                        },
+                      - {
+                          - name  = "OPENSEARCH_ENDPOINT"
+                          - value = "vpc-geocoding-poc-cyqs3vmdpt2nb5maix6wtnache.ap-southeast-2.es.amazonaws.com"
+                        },
+                    ]
+                  - essential        = true
+                  - image            = "657416661258.dkr.ecr.ap-southeast-2.amazonaws.com/aws-geocoding-loader:latest"
+                  - logConfiguration = {
+                      - logDriver = "awslogs"
+                      - options   = {
+                          - awslogs-group         = "/ecs/aws-geocoding-loader"
+                          - awslogs-region        = "ap-southeast-2"
+                          - awslogs-stream-prefix = "ecs"
+                        }
+                    }
+                  - mountPoints      = []
+                  - name             = "loader"
+                  - portMappings     = []
+                  - secrets          = [
+                      - {
+                          - name      = "DB_PASS"
+                          - valueFrom = "arn:aws:secretsmanager:ap-southeast-2:657416661258:secret:rds!cluster-01d7b821-b23e-4643-b2b1-b613931aeac0-RNtoZt:password::"
+                        },
+                      - {
+                          - name      = "DB_USER"
+                          - valueFrom = "arn:aws:secretsmanager:ap-southeast-2:657416661258:secret:rds!cluster-01d7b821-b23e-4643-b2b1-b613931aeac0-RNtoZt:username::"
+                        },
+                    ]
+                  - systemControls   = []
+                  - volumesFrom      = []
+                },
+            ]
+        ) -> (known after apply) # forces replacement
+      ~ enable_fault_injection   = false -> (known after apply)
+      ~ id                       = "aws-geocoding-loader" -> (known after apply)
+      ~ revision                 = 8 -> (known after apply)
+      - tags                     = {} -> null
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_iam_policy.ecs_task_policy will be updated in-place
+  ~ resource "aws_iam_policy" "ecs_task_policy" {
+        id               = "arn:aws:iam::657416661258:policy/aws-geocoding-ecs-task-policy"
+        name             = "aws-geocoding-ecs-task-policy"
+      ~ policy           = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action   = [
+                          - "s3:GetObject",
+                          - "s3:ListBucket",
+                          - "s3:PutObject",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = [
+                          - "arn:aws:s3:::aws-geocoding-raw-xk47602q",
+                          - "arn:aws:s3:::aws-geocoding-raw-xk47602q/*",
+                          - "arn:aws:s3:::aws-geocoding-ref-xk47602q",
+                          - "arn:aws:s3:::aws-geocoding-ref-xk47602q/*",
+                        ]
+                    },
+                  - {
+                      - Action   = [
+                          - "es:ESHttp*",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = "arn:aws:es:ap-southeast-2:657416661258:domain/geocoding-poc/*"
+                    },
+                  - {
+                      - Action   = [
+                          - "secretsmanager:GetSecretValue",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = "arn:aws:secretsmanager:ap-southeast-2:657416661258:secret:rds!cluster-01d7b821-b23e-4643-b2b1-b613931aeac0-RNtoZt"
+                    },
+                  - {
+                      - Action   = [
+                          - "kms:Decrypt",
+                          - "kms:GenerateDataKey",
+                        ]
+                      - Effect   = "Allow"
+                      - Resource = "arn:aws:kms:ap-southeast-2:657416661258:key/3bb4c2c4-9e2c-45a8-8118-29615a370d55"
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> (known after apply)
+        tags             = {}
+        # (7 unchanged attributes hidden)
+    }
+
+  # aws_iam_policy.lambda_policy will be updated in-place
+  ~ resource "aws_iam_policy" "lambda_policy" {
+        id               = "arn:aws:iam::657416661258:policy/aws-geocoding-lambda-policy"
+        name             = "aws-geocoding-lambda-policy"
+      ~ policy           = jsonencode(
+          ~ {
+              ~ Statement = [
+                    {
+                        Action   = [
+                            "logs:CreateLogGroup",
+                            "logs:CreateLogStream",
+                            "logs:PutLogEvents",
+                        ]
+                        Effect   = "Allow"
+                        Resource = "arn:aws:logs:*:*:*"
+                    },
+                  ~ {
+                      ~ Action   = [
+                          - "ec2:CreateNetworkInterface",
+                          - "ec2:DescribeNetworkInterfaces",
+                          - "ec2:DeleteNetworkInterface",
+                          + "rds-data:ExecuteStatement",
+                          + "rds-data:BatchExecuteStatement",
+                          + "rds-data:BeginTransaction",
+                          + "rds-data:CommitTransaction",
+                          + "rds-data:RollbackTransaction",
+                        ]
+                      ~ Resource = "*" -> "arn:aws:rds:ap-southeast-2:657416661258:cluster:aws-geocoding-aurora-cluster"
+                        # (1 unchanged attribute hidden)
+                    },
+                    {
+                        Action   = [
+                            "s3:GetObject",
+                            "s3:PutObject",
+                            "s3:ListBucket",
+                        ]
+                        Effect   = "Allow"
+                        Resource = [
+                            "arn:aws:s3:::aws-geocoding-raw-xk47602q",
+                            "arn:aws:s3:::aws-geocoding-raw-xk47602q/*",
+                            "arn:aws:s3:::aws-geocoding-ref-xk47602q",
+                            "arn:aws:s3:::aws-geocoding-ref-xk47602q/*",
+                            "arn:aws:s3:::aws-geocoding-results-xk47602q",
+                            "arn:aws:s3:::aws-geocoding-results-xk47602q/*",
+                        ]
+                    },
+                    # (2 unchanged elements hidden)
+                ]
+                # (1 unchanged attribute hidden)
+            }
+        )
+        tags             = {}
+        # (7 unchanged attributes hidden)
+    }
+
+  # aws_iam_policy.validator_policy will be updated in-place
+  ~ resource "aws_iam_policy" "validator_policy" {
+        id               = "arn:aws:iam::657416661258:policy/aws-geocoding-validator-policy"
+        name             = "aws-geocoding-validator-policy"
+      ~ policy           = jsonencode(
+          ~ {
+              ~ Statement = [
+                    {
+                        Action   = [
+                            "logs:CreateLogGroup",
+                            "logs:CreateLogStream",
+                            "logs:PutLogEvents",
+                        ]
+                        Effect   = "Allow"
+                        Resource = "arn:aws:logs:*:*:*"
+                    },
+                  ~ {
+                      ~ Action   = [
+                          - "ec2:CreateNetworkInterface",
+                          - "ec2:DescribeNetworkInterfaces",
+                          - "ec2:DeleteNetworkInterface",
+                          + "rds-data:ExecuteStatement",
+                          + "rds-data:BatchExecuteStatement",
+                        ]
+                      ~ Resource = "*" -> "arn:aws:rds:ap-southeast-2:657416661258:cluster:aws-geocoding-aurora-cluster"
+                        # (1 unchanged attribute hidden)
+                    },
+                    {
+                        Action   = [
+                            "ecr:BatchCheckLayerAvailability",
+                            "ecr:GetDownloadUrlForLayer",
+                            "ecr:BatchGetImage",
+                            "ecr:GetAuthorizationToken",
+                        ]
+                        Effect   = "Allow"
+                        Resource = "*"
+                    },
+                    # (1 unchanged element hidden)
+                ]
+                # (1 unchanged attribute hidden)
+            }
+        )
+        tags             = {}
+        # (7 unchanged attributes hidden)
+    }
+
+  # aws_lambda_function.loader_lambda will be updated in-place
+  ~ resource "aws_lambda_function" "loader_lambda" {
+        id                             = "aws-geocoding-loader"
+        tags                           = {}
+        # (28 unchanged attributes hidden)
+
+      ~ environment {
+          ~ variables = {
+              - "DB_HOST"             = "aws-geocoding-aurora-cluster.cluster-cz6264ea4mrg.ap-southeast-2.rds.amazonaws.com"
+              - "DB_NAME"             = "geocoder"
+              - "DB_SECRET_ARN"       = "arn:aws:secretsmanager:ap-southeast-2:657416661258:secret:rds!cluster-01d7b821-b23e-4643-b2b1-b613931aeac0-RNtoZt"
+              - "OPENSEARCH_ENDPOINT" = "vpc-geocoding-poc-cyqs3vmdpt2nb5maix6wtnache.ap-southeast-2.es.amazonaws.com"
+            } -> (known after apply)
+        }
+
+      - vpc_config {
+          - ipv6_allowed_for_dual_stack = false -> null
+          - security_group_ids          = [
+              - "sg-0b5e3d4fba5aa5451",
+            ] -> null
+          - subnet_ids                  = [
+              - "subnet-03994301df884c7e8",
+              - "subnet-0c0266fe1a10ca40c",
+            ] -> null
+          - vpc_id                      = "vpc-0ab2d6dbfb72c44be" -> null
+        }
+
+        # (3 unchanged blocks hidden)
+    }
+
+  # aws_lambda_function.validator_lambda will be updated in-place
+  ~ resource "aws_lambda_function" "validator_lambda" {
+        id                             = "aws-geocoding-validator"
+        tags                           = {}
+        # (28 unchanged attributes hidden)
+
+      ~ environment {
+          ~ variables = {
+              - "DB_HOST"             = "aws-geocoding-aurora-cluster.cluster-cz6264ea4mrg.ap-southeast-2.rds.amazonaws.com"
+              - "DB_NAME"             = "geocoder"
+              - "DB_SECRET_ARN"       = "arn:aws:secretsmanager:ap-southeast-2:657416661258:secret:rds!cluster-01d7b821-b23e-4643-b2b1-b613931aeac0-RNtoZt"
+              - "OPENSEARCH_ENDPOINT" = "vpc-geocoding-poc-cyqs3vmdpt2nb5maix6wtnache.ap-southeast-2.es.amazonaws.com"
+            } -> (known after apply)
+        }
+
+      - vpc_config {
+          - ipv6_allowed_for_dual_stack = false -> null
+          - security_group_ids          = [
+              - "sg-0b5e3d4fba5aa5451",
+            ] -> null
+          - subnet_ids                  = [
+              - "subnet-03994301df884c7e8",
+              - "subnet-0c0266fe1a10ca40c",
+            ] -> null
+          - vpc_id                      = "vpc-0ab2d6dbfb72c44be" -> null
+        }
+
+        # (3 unchanged blocks hidden)
+    }
+
+  # aws_opensearch_domain.geocoding must be replaced
+-/+ resource "aws_opensearch_domain" "geocoding" {
+      ~ access_policies                   = jsonencode(
+          ~ {
+              ~ Statement = [
+                  ~ {
+                      ~ Principal = {
+                          ~ AWS = [
+                                # (1 unchanged element hidden)
+                                "arn:aws:iam::657416661258:role/aws-geocoding-lambda-role",
+                              + "arn:aws:iam::657416661258:user/aws-cli",
+                            ]
+                        }
+                        # (3 unchanged attributes hidden)
+                    },
+                ]
+                # (1 unchanged attribute hidden)
+            }
+        )
+      ~ advanced_options                  = {} -> (known after apply)
+      ~ arn                               = "arn:aws:es:ap-southeast-2:657416661258:domain/geocoding-poc" -> (known after apply)
+      ~ dashboard_endpoint                = "vpc-geocoding-poc-cyqs3vmdpt2nb5maix6wtnache.ap-southeast-2.es.amazonaws.com/_dashboards" -> (known after apply)
+      + dashboard_endpoint_v2             = (known after apply)
+      + domain_endpoint_v2_hosted_zone_id = (known after apply)
+      ~ domain_id                         = "657416661258/geocoding-poc" -> (known after apply)
+      ~ endpoint                          = "vpc-geocoding-poc-cyqs3vmdpt2nb5maix6wtnache.ap-southeast-2.es.amazonaws.com" -> (known after apply)
+      + endpoint_v2                       = (known after apply)
+      ~ id                                = "arn:aws:es:ap-southeast-2:657416661258:domain/geocoding-poc" -> (known after apply)
+      ~ ip_address_type                   = "ipv4" -> (known after apply)
+      ~ kibana_endpoint                   = "vpc-geocoding-poc-cyqs3vmdpt2nb5maix6wtnache.ap-southeast-2.es.amazonaws.com/_plugin/kibana/" -> (known after apply)
+      ~ tags                              = {
+            "CostCenter"  = "geocoding"
+            "Environment" = "poc"
+            "Name"        = "aws-geocoding-opensearch"
+          + "Networking"  = "Zero-VPC"
+        }
+      ~ tags_all                          = {
+          + "Networking"  = "Zero-VPC"
+            # (5 unchanged elements hidden)
+        }
+        # (2 unchanged attributes hidden)
+
+      ~ advanced_security_options (known after apply)
+
+      ~ auto_tune_options (known after apply)
+      - auto_tune_options {
+          - desired_state       = "DISABLED" -> null
+          - rollback_on_disable = "NO_ROLLBACK" -> null
+          - use_off_peak_window = false -> null
+        }
+
+      ~ cluster_config {
+          - dedicated_master_count        = 0 -> null
+          - multi_az_with_standby_enabled = false -> null
+          - warm_count                    = 0 -> null
+          - warm_enabled                  = false -> null
+            # (6 unchanged attributes hidden)
+
+          ~ cold_storage_options (known after apply)
+          - cold_storage_options {
+              - enabled = false -> null
+            }
+
+          ~ node_options (known after apply)
+        }
+
+      - cognito_options {
+          - enabled          = false -> null
+            # (3 unchanged attributes hidden)
+        }
+
+      ~ encrypt_at_rest {
+          ~ kms_key_id = "arn:aws:kms:ap-southeast-2:657416661258:key/01bd16ce-298b-4dfc-9016-e4ec4803ab57" -> (known after apply)
+            # (1 unchanged attribute hidden)
+        }
+
+      ~ off_peak_window_options (known after apply)
+      - off_peak_window_options {
+          - enabled = true -> null
+
+          - off_peak_window {
+              - window_start_time {
+                  - hours   = 11 -> null
+                  - minutes = 0 -> null
+                }
+            }
+        }
+
+      - snapshot_options {
+          - automated_snapshot_start_hour = 0 -> null
+        }
+
+      ~ software_update_options (known after apply)
+      - software_update_options {
+          - auto_software_update_enabled = false -> null
+        }
+
+      - vpc_options { # forces replacement
+          - availability_zones = [
+              - "ap-southeast-2a",
+            ] -> null
+          - security_group_ids = [
+              - "sg-0ba8042bceb4bd9b9",
+            ] -> null
+          - subnet_ids         = [
+              - "subnet-0c0266fe1a10ca40c",
+            ] -> null
+          - vpc_id             = "vpc-0ab2d6dbfb72c44be" -> null
+        }
+
+        # (3 unchanged blocks hidden)
+    }
+
+  # aws_security_group.endpoints_sg will be destroyed
+  # (because aws_security_group.endpoints_sg is not in configuration)
+  - resource "aws_security_group" "endpoints_sg" {
+      - arn                    = "arn:aws:ec2:ap-southeast-2:657416661258:security-group/sg-0efffdf7a9404cf37" -> null
+      - description            = "Allow HTTPS from Lambda" -> null
+      - egress                 = [] -> null
+      - id                     = "sg-0efffdf7a9404cf37" -> null
+      - ingress                = [
+          - {
+              - cidr_blocks      = []
+              - from_port        = 443
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = [
+                  - "sg-0b5e3d4fba5aa5451",
+                ]
+              - self             = false
+              - to_port          = 443
+                # (1 unchanged attribute hidden)
+            },
+        ] -> null
+      - name                   = "aws-geocoding-endpoints-sg" -> null
+      - owner_id               = "657416661258" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {} -> null
+      - tags_all               = {
+          - "Environment" = "POC"
+          - "ManagedBy"   = "Terraform"
+          - "Project"     = "AWS Address Validation"
+        } -> null
+      - vpc_id                 = "vpc-0ab2d6dbfb72c44be" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_security_group.opensearch_sg will be destroyed
+  # (because aws_security_group.opensearch_sg is not in configuration)
+  - resource "aws_security_group" "opensearch_sg" {
+      - arn                    = "arn:aws:ec2:ap-southeast-2:657416661258:security-group/sg-0ba8042bceb4bd9b9" -> null
+      - description            = "Allow access to OpenSearch from Lambda" -> null
+      - egress                 = [
+          - {
+              - cidr_blocks      = [
+                  - "0.0.0.0/0",
+                ]
+              - from_port        = 0
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "-1"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ] -> null
+      - id                     = "sg-0ba8042bceb4bd9b9" -> null
+      - ingress                = [
+          - {
+              - cidr_blocks      = []
+              - description      = "HTTPS from Lambda"
+              - from_port        = 443
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = [
+                  - "sg-0b5e3d4fba5aa5451",
+                ]
+              - self             = false
+              - to_port          = 443
+            },
+        ] -> null
+      - name                   = "aws-geocoding-opensearch-sg" -> null
+      - owner_id               = "657416661258" -> null
+      - revoke_rules_on_delete = false -> null
+      - tags                   = {
+          - "Name" = "aws-geocoding-opensearch-sg"
+        } -> null
+      - tags_all               = {
+          - "Environment" = "POC"
+          - "ManagedBy"   = "Terraform"
+          - "Name"        = "aws-geocoding-opensearch-sg"
+          - "Project"     = "AWS Address Validation"
+        } -> null
+      - vpc_id                 = "vpc-0ab2d6dbfb72c44be" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_sns_topic_subscription.email_alert will be created
+  + resource "aws_sns_topic_subscription" "email_alert" {
+      + arn                             = (known after apply)
+      + confirmation_timeout_in_minutes = 1
+      + confirmation_was_authenticated  = (known after apply)
+      + endpoint                        = "your-email@example.com"
+      + endpoint_auto_confirms          = false
+      + filter_policy_scope             = (known after apply)
+      + id                              = (known after apply)
+      + owner_id                        = (known after apply)
+      + pending_confirmation            = (known after apply)
+      + protocol                        = "email"
+      + raw_message_delivery            = false
+      + topic_arn                       = "arn:aws:sns:ap-southeast-2:657416661258:aws-geocoding-alerts"
+    }
+
+  # aws_vpc_endpoint.ecr_api will be destroyed
+  # (because aws_vpc_endpoint.ecr_api is not in configuration)
+  - resource "aws_vpc_endpoint" "ecr_api" {
+      - arn                        = "arn:aws:ec2:ap-southeast-2:657416661258:vpc-endpoint/vpce-02b02bfd206ab4049" -> null
+      - cidr_blocks                = [] -> null
+      - dns_entry                  = [
+          - {
+              - dns_name       = "vpce-02b02bfd206ab4049-d34t6sfd.api.ecr.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-02b02bfd206ab4049-d34t6sfd-ap-southeast-2b.api.ecr.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-02b02bfd206ab4049-d34t6sfd-ap-southeast-2a.api.ecr.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "api.ecr.ap-southeast-2.amazonaws.com"
+              - hosted_zone_id = "Z070940525HLX1KGD2N2A"
+            },
+          - {
+              - dns_name       = "ecr.ap-southeast-2.api.aws"
+              - hosted_zone_id = "Z072996120INL2ACO7TFL"
+            },
+        ] -> null
+      - id                         = "vpce-02b02bfd206ab4049" -> null
+      - ip_address_type            = "ipv4" -> null
+      - network_interface_ids      = [
+          - "eni-05ea7519f8cad21d1",
+          - "eni-05f1ace5330816aec",
+        ] -> null
+      - owner_id                   = "657416661258" -> null
+      - policy                     = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "*"
+                      - Effect    = "Allow"
+                      - Principal = "*"
+                      - Resource  = "*"
+                    },
+                ]
+            }
+        ) -> null
+      - private_dns_enabled        = true -> null
+      - requester_managed          = false -> null
+      - route_table_ids            = [] -> null
+      - security_group_ids         = [
+          - "sg-0efffdf7a9404cf37",
+        ] -> null
+      - service_name               = "com.amazonaws.ap-southeast-2.ecr.api" -> null
+      - service_region             = "ap-southeast-2" -> null
+      - state                      = "available" -> null
+      - subnet_ids                 = [
+          - "subnet-03994301df884c7e8",
+          - "subnet-0c0266fe1a10ca40c",
+        ] -> null
+      - tags                       = {
+          - "Name" = "aws-geocoding-ecr-api-endpoint"
+        } -> null
+      - tags_all                   = {
+          - "Environment" = "POC"
+          - "ManagedBy"   = "Terraform"
+          - "Name"        = "aws-geocoding-ecr-api-endpoint"
+          - "Project"     = "AWS Address Validation"
+        } -> null
+      - vpc_endpoint_type          = "Interface" -> null
+      - vpc_id                     = "vpc-0ab2d6dbfb72c44be" -> null
+        # (2 unchanged attributes hidden)
+
+      - dns_options {
+          - dns_record_ip_type                             = "ipv4" -> null
+          - private_dns_only_for_inbound_resolver_endpoint = false -> null
+        }
+
+      - subnet_configuration {
+          - ipv4      = "10.0.10.74" -> null
+          - subnet_id = "subnet-0c0266fe1a10ca40c" -> null
+            # (1 unchanged attribute hidden)
+        }
+      - subnet_configuration {
+          - ipv4      = "10.0.11.61" -> null
+          - subnet_id = "subnet-03994301df884c7e8" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_vpc_endpoint.ecr_dkr will be destroyed
+  # (because aws_vpc_endpoint.ecr_dkr is not in configuration)
+  - resource "aws_vpc_endpoint" "ecr_dkr" {
+      - arn                        = "arn:aws:ec2:ap-southeast-2:657416661258:vpc-endpoint/vpce-02409fba33a8d5995" -> null
+      - cidr_blocks                = [] -> null
+      - dns_entry                  = [
+          - {
+              - dns_name       = "vpce-02409fba33a8d5995-oawq162k.dkr.ecr.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-02409fba33a8d5995-oawq162k-ap-southeast-2a.dkr.ecr.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-02409fba33a8d5995-oawq162k-ap-southeast-2b.dkr.ecr.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "dkr.ecr.ap-southeast-2.amazonaws.com"
+              - hosted_zone_id = "Z0873243FBLNYJNQ7NTB"
+            },
+          - {
+              - dns_name       = "*.dkr.ecr.ap-southeast-2.amazonaws.com"
+              - hosted_zone_id = "Z0873243FBLNYJNQ7NTB"
+            },
+          - {
+              - dns_name       = "dkr-ecr.ap-southeast-2.on.aws"
+              - hosted_zone_id = "Z0736767372SNSZXGMLQK"
+            },
+          - {
+              - dns_name       = "*.dkr-ecr.ap-southeast-2.on.aws"
+              - hosted_zone_id = "Z0736767372SNSZXGMLQK"
+            },
+        ] -> null
+      - id                         = "vpce-02409fba33a8d5995" -> null
+      - ip_address_type            = "ipv4" -> null
+      - network_interface_ids      = [
+          - "eni-070646020519ca230",
+          - "eni-07d1a3fe8b21a9dd4",
+        ] -> null
+      - owner_id                   = "657416661258" -> null
+      - policy                     = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "*"
+                      - Effect    = "Allow"
+                      - Principal = "*"
+                      - Resource  = "*"
+                    },
+                ]
+            }
+        ) -> null
+      - private_dns_enabled        = true -> null
+      - requester_managed          = false -> null
+      - route_table_ids            = [] -> null
+      - security_group_ids         = [
+          - "sg-0efffdf7a9404cf37",
+        ] -> null
+      - service_name               = "com.amazonaws.ap-southeast-2.ecr.dkr" -> null
+      - service_region             = "ap-southeast-2" -> null
+      - state                      = "available" -> null
+      - subnet_ids                 = [
+          - "subnet-03994301df884c7e8",
+          - "subnet-0c0266fe1a10ca40c",
+        ] -> null
+      - tags                       = {
+          - "Name" = "aws-geocoding-ecr-dkr-endpoint"
+        } -> null
+      - tags_all                   = {
+          - "Environment" = "POC"
+          - "ManagedBy"   = "Terraform"
+          - "Name"        = "aws-geocoding-ecr-dkr-endpoint"
+          - "Project"     = "AWS Address Validation"
+        } -> null
+      - vpc_endpoint_type          = "Interface" -> null
+      - vpc_id                     = "vpc-0ab2d6dbfb72c44be" -> null
+        # (2 unchanged attributes hidden)
+
+      - dns_options {
+          - dns_record_ip_type                             = "ipv4" -> null
+          - private_dns_only_for_inbound_resolver_endpoint = false -> null
+        }
+
+      - subnet_configuration {
+          - ipv4      = "10.0.10.45" -> null
+          - subnet_id = "subnet-0c0266fe1a10ca40c" -> null
+            # (1 unchanged attribute hidden)
+        }
+      - subnet_configuration {
+          - ipv4      = "10.0.11.218" -> null
+          - subnet_id = "subnet-03994301df884c7e8" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_vpc_endpoint.lambda will be destroyed
+  # (because aws_vpc_endpoint.lambda is not in configuration)
+  - resource "aws_vpc_endpoint" "lambda" {
+      - arn                        = "arn:aws:ec2:ap-southeast-2:657416661258:vpc-endpoint/vpce-0f2c2ba2468904d66" -> null
+      - cidr_blocks                = [] -> null
+      - dns_entry                  = [
+          - {
+              - dns_name       = "vpce-0f2c2ba2468904d66-xv45hfa3.lambda.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-0f2c2ba2468904d66-xv45hfa3-ap-southeast-2a.lambda.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-0f2c2ba2468904d66-xv45hfa3-ap-southeast-2b.lambda.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "lambda.ap-southeast-2.amazonaws.com"
+              - hosted_zone_id = "Z0083577MHF74SB3FEJR"
+            },
+          - {
+              - dns_name       = "lambda.ap-southeast-2.api.aws"
+              - hosted_zone_id = "Z00825042H341NQNS48YW"
+            },
+        ] -> null
+      - id                         = "vpce-0f2c2ba2468904d66" -> null
+      - ip_address_type            = "ipv4" -> null
+      - network_interface_ids      = [
+          - "eni-064945c3737cbbb4e",
+          - "eni-08116e4cda8543093",
+        ] -> null
+      - owner_id                   = "657416661258" -> null
+      - policy                     = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "*"
+                      - Effect    = "Allow"
+                      - Principal = "*"
+                      - Resource  = "*"
+                    },
+                ]
+            }
+        ) -> null
+      - private_dns_enabled        = true -> null
+      - requester_managed          = false -> null
+      - route_table_ids            = [] -> null
+      - security_group_ids         = [
+          - "sg-0efffdf7a9404cf37",
+        ] -> null
+      - service_name               = "com.amazonaws.ap-southeast-2.lambda" -> null
+      - service_region             = "ap-southeast-2" -> null
+      - state                      = "available" -> null
+      - subnet_ids                 = [
+          - "subnet-03994301df884c7e8",
+          - "subnet-0c0266fe1a10ca40c",
+        ] -> null
+      - tags                       = {
+          - "Name" = "aws-geocoding-lambda-endpoint"
+        } -> null
+      - tags_all                   = {
+          - "Environment" = "POC"
+          - "ManagedBy"   = "Terraform"
+          - "Name"        = "aws-geocoding-lambda-endpoint"
+          - "Project"     = "AWS Address Validation"
+        } -> null
+      - vpc_endpoint_type          = "Interface" -> null
+      - vpc_id                     = "vpc-0ab2d6dbfb72c44be" -> null
+        # (2 unchanged attributes hidden)
+
+      - dns_options {
+          - dns_record_ip_type                             = "ipv4" -> null
+          - private_dns_only_for_inbound_resolver_endpoint = false -> null
+        }
+
+      - subnet_configuration {
+          - ipv4      = "10.0.10.132" -> null
+          - subnet_id = "subnet-0c0266fe1a10ca40c" -> null
+            # (1 unchanged attribute hidden)
+        }
+      - subnet_configuration {
+          - ipv4      = "10.0.11.93" -> null
+          - subnet_id = "subnet-03994301df884c7e8" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_vpc_endpoint.logs will be destroyed
+  # (because aws_vpc_endpoint.logs is not in configuration)
+  - resource "aws_vpc_endpoint" "logs" {
+      - arn                        = "arn:aws:ec2:ap-southeast-2:657416661258:vpc-endpoint/vpce-0720df92c7675e6a1" -> null
+      - cidr_blocks                = [] -> null
+      - dns_entry                  = [
+          - {
+              - dns_name       = "vpce-0720df92c7675e6a1-8d0tu02h.logs.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-0720df92c7675e6a1-8d0tu02h-ap-southeast-2b.logs.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-0720df92c7675e6a1-8d0tu02h-ap-southeast-2a.logs.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "logs.ap-southeast-2.amazonaws.com"
+              - hosted_zone_id = "Z07309231284QVUU1ODYG"
+            },
+          - {
+              - dns_name       = "streaming-logs.ap-southeast-2.api.aws"
+              - hosted_zone_id = "Z07362541Y7E6ZT87RPOF"
+            },
+          - {
+              - dns_name       = "streaming-logs.ap-southeast-2.amazonaws.com"
+              - hosted_zone_id = "Z07313842G0S5WCVEP7V4"
+            },
+          - {
+              - dns_name       = "logs.ap-southeast-2.api.aws"
+              - hosted_zone_id = "Z07362441SSXNE1UA1ST"
+            },
+        ] -> null
+      - id                         = "vpce-0720df92c7675e6a1" -> null
+      - ip_address_type            = "ipv4" -> null
+      - network_interface_ids      = [
+          - "eni-01aa47485a90a3a47",
+          - "eni-01b023bef0d78f899",
+        ] -> null
+      - owner_id                   = "657416661258" -> null
+      - policy                     = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "*"
+                      - Effect    = "Allow"
+                      - Principal = "*"
+                      - Resource  = "*"
+                    },
+                ]
+            }
+        ) -> null
+      - private_dns_enabled        = true -> null
+      - requester_managed          = false -> null
+      - route_table_ids            = [] -> null
+      - security_group_ids         = [
+          - "sg-0efffdf7a9404cf37",
+        ] -> null
+      - service_name               = "com.amazonaws.ap-southeast-2.logs" -> null
+      - service_region             = "ap-southeast-2" -> null
+      - state                      = "available" -> null
+      - subnet_ids                 = [
+          - "subnet-03994301df884c7e8",
+          - "subnet-0c0266fe1a10ca40c",
+        ] -> null
+      - tags                       = {
+          - "Name" = "aws-geocoding-logs-endpoint"
+        } -> null
+      - tags_all                   = {
+          - "Environment" = "POC"
+          - "ManagedBy"   = "Terraform"
+          - "Name"        = "aws-geocoding-logs-endpoint"
+          - "Project"     = "AWS Address Validation"
+        } -> null
+      - vpc_endpoint_type          = "Interface" -> null
+      - vpc_id                     = "vpc-0ab2d6dbfb72c44be" -> null
+        # (2 unchanged attributes hidden)
+
+      - dns_options {
+          - dns_record_ip_type                             = "ipv4" -> null
+          - private_dns_only_for_inbound_resolver_endpoint = false -> null
+        }
+
+      - subnet_configuration {
+          - ipv4      = "10.0.10.194" -> null
+          - subnet_id = "subnet-0c0266fe1a10ca40c" -> null
+            # (1 unchanged attribute hidden)
+        }
+      - subnet_configuration {
+          - ipv4      = "10.0.11.67" -> null
+          - subnet_id = "subnet-03994301df884c7e8" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_vpc_endpoint.s3 will be destroyed
+  # (because aws_vpc_endpoint.s3 is not in configuration)
+  - resource "aws_vpc_endpoint" "s3" {
+      - arn                        = "arn:aws:ec2:ap-southeast-2:657416661258:vpc-endpoint/vpce-0489998c71c2dcbbb" -> null
+      - cidr_blocks                = [
+          - "3.5.164.0/22",
+          - "16.12.74.0/24",
+          - "3.5.168.0/23",
+          - "52.95.128.0/21",
+        ] -> null
+      - dns_entry                  = [] -> null
+      - id                         = "vpce-0489998c71c2dcbbb" -> null
+      - ip_address_type            = "ipv4" -> null
+      - network_interface_ids      = [] -> null
+      - owner_id                   = "657416661258" -> null
+      - policy                     = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "*"
+                      - Effect    = "Allow"
+                      - Principal = "*"
+                      - Resource  = "*"
+                    },
+                ]
+              - Version   = "2008-10-17"
+            }
+        ) -> null
+      - prefix_list_id             = "pl-6ca54005" -> null
+      - private_dns_enabled        = false -> null
+      - requester_managed          = false -> null
+      - route_table_ids            = [
+          - "rtb-004be4b78836bb9a8",
+        ] -> null
+      - security_group_ids         = [] -> null
+      - service_name               = "com.amazonaws.ap-southeast-2.s3" -> null
+      - service_region             = "ap-southeast-2" -> null
+      - state                      = "available" -> null
+      - subnet_ids                 = [] -> null
+      - tags                       = {
+          - "Name" = "aws-geocoding-s3-endpoint"
+        } -> null
+      - tags_all                   = {
+          - "Environment" = "POC"
+          - "ManagedBy"   = "Terraform"
+          - "Name"        = "aws-geocoding-s3-endpoint"
+          - "Project"     = "AWS Address Validation"
+        } -> null
+      - vpc_endpoint_type          = "Gateway" -> null
+      - vpc_id                     = "vpc-0ab2d6dbfb72c44be" -> null
+        # (2 unchanged attributes hidden)
+
+      - dns_options {
+          - dns_record_ip_type                             = "service-defined" -> null
+          - private_dns_only_for_inbound_resolver_endpoint = false -> null
+        }
+    }
+
+  # aws_vpc_endpoint.secrets will be destroyed
+  # (because aws_vpc_endpoint.secrets is not in configuration)
+  - resource "aws_vpc_endpoint" "secrets" {
+      - arn                        = "arn:aws:ec2:ap-southeast-2:657416661258:vpc-endpoint/vpce-06b35e1fb79c17f80" -> null
+      - cidr_blocks                = [] -> null
+      - dns_entry                  = [
+          - {
+              - dns_name       = "vpce-06b35e1fb79c17f80-xhpagds7.secretsmanager.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-06b35e1fb79c17f80-xhpagds7-ap-southeast-2a.secretsmanager.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "vpce-06b35e1fb79c17f80-xhpagds7-ap-southeast-2b.secretsmanager.ap-southeast-2.vpce.amazonaws.com"
+              - hosted_zone_id = "ZDK2GCRPAFKGO"
+            },
+          - {
+              - dns_name       = "secretsmanager.ap-southeast-2.amazonaws.com"
+              - hosted_zone_id = "Z07436101B9E8HSU425M"
+            },
+        ] -> null
+      - id                         = "vpce-06b35e1fb79c17f80" -> null
+      - ip_address_type            = "ipv4" -> null
+      - network_interface_ids      = [
+          - "eni-0025546c7d34ac717",
+          - "eni-0a8ebfcdc3d2dda64",
+        ] -> null
+      - owner_id                   = "657416661258" -> null
+      - policy                     = jsonencode(
+            {
+              - Statement = [
+                  - {
+                      - Action    = "*"
+                      - Effect    = "Allow"
+                      - Principal = "*"
+                      - Resource  = "*"
+                    },
+                ]
+            }
+        ) -> null
+      - private_dns_enabled        = true -> null
+      - requester_managed          = false -> null
+      - route_table_ids            = [] -> null
+      - security_group_ids         = [
+          - "sg-0efffdf7a9404cf37",
+        ] -> null
+      - service_name               = "com.amazonaws.ap-southeast-2.secretsmanager" -> null
+      - service_region             = "ap-southeast-2" -> null
+      - state                      = "available" -> null
+      - subnet_ids                 = [
+          - "subnet-03994301df884c7e8",
+          - "subnet-0c0266fe1a10ca40c",
+        ] -> null
+      - tags                       = {
+          - "Name" = "aws-geocoding-secrets-endpoint"
+        } -> null
+      - tags_all                   = {
+          - "Environment" = "POC"
+          - "ManagedBy"   = "Terraform"
+          - "Name"        = "aws-geocoding-secrets-endpoint"
+          - "Project"     = "AWS Address Validation"
+        } -> null
+      - vpc_endpoint_type          = "Interface" -> null
+      - vpc_id                     = "vpc-0ab2d6dbfb72c44be" -> null
+        # (2 unchanged attributes hidden)
+
+      - dns_options {
+          - dns_record_ip_type                             = "ipv4" -> null
+          - private_dns_only_for_inbound_resolver_endpoint = false -> null
+        }
+
+      - subnet_configuration {
+          - ipv4      = "10.0.10.219" -> null
+          - subnet_id = "subnet-0c0266fe1a10ca40c" -> null
+            # (1 unchanged attribute hidden)
+        }
+      - subnet_configuration {
+          - ipv4      = "10.0.11.23" -> null
+          - subnet_id = "subnet-03994301df884c7e8" -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+Plan: 3 to add, 5 to change, 10 to destroy.
+
+Changes to Outputs:
+  + db_cluster_arn                = "arn:aws:rds:ap-southeast-2:657416661258:cluster:aws-geocoding-aurora-cluster"
+  ~ opensearch_dashboard_endpoint = "vpc-geocoding-poc-cyqs3vmdpt2nb5maix6wtnache.ap-southeast-2.es.amazonaws.com/_dashboards" -> (known after apply)
+  ~ opensearch_endpoint           = "vpc-geocoding-poc-cyqs3vmdpt2nb5maix6wtnache.ap-southeast-2.es.amazonaws.com" -> (known after apply)

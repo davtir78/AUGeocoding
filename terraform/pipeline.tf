@@ -422,6 +422,12 @@ resource "aws_sfn_state_machine" "orchestrator" {
         },
         ResultPath = "$.reference_result",
         Next       = "EndRefreshReferenceProgress",
+        Retry = [{
+          ErrorEquals     = ["States.ALL"],
+          IntervalSeconds = 10,
+          MaxAttempts     = 5,
+          BackoffRate     = 2.0
+        }],
         Catch      = [{ ErrorEquals = ["States.ALL"], Next = "HandleTransformError", ResultPath = "$.error_info" }]
       },
       EndRefreshReferenceProgress = {
@@ -468,9 +474,9 @@ resource "aws_sfn_state_machine" "orchestrator" {
           "TaskDefinition.$" : "$.pipeline_config.Payload.resolved_task_definition_arn",
           "NetworkConfiguration" : {
             "AwsvpcConfiguration" : {
-              "Subnets" : [aws_subnet.private_a.id, aws_subnet.private_b.id],
-              "SecurityGroups" : [aws_security_group.lambda_sg.id],
-              "AssignPublicIp" : "DISABLED"
+              "Subnets" : var.use_vpc ? (var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]) : [aws_subnet.public_a.id, aws_subnet.public_b.id],
+              "SecurityGroups" : [aws_security_group.ecs_sg.id],
+              "AssignPublicIp" : var.use_vpc ? "DISABLED" : "ENABLED"
             }
           },
           "Overrides" : {
@@ -488,6 +494,12 @@ resource "aws_sfn_state_machine" "orchestrator" {
         },
         ResultPath = "$.transform_result",
         Next       = "EndTransformProgress",
+        Retry = [{
+          ErrorEquals     = ["States.ALL"],
+          IntervalSeconds = 30,
+          MaxAttempts     = 3,
+          BackoffRate     = 2.0
+        }],
         Catch      = [{ ErrorEquals = ["States.ALL"], Next = "HandleTransformError", ResultPath = "$.error_info" }]
       },
       EndTransformProgress = {
@@ -533,9 +545,9 @@ resource "aws_sfn_state_machine" "orchestrator" {
           "TaskDefinition.$" : "$.pipeline_config.Payload.resolved_task_definition_arn",
           "NetworkConfiguration" : {
             "AwsvpcConfiguration" : {
-              "Subnets" : [aws_subnet.private_a.id, aws_subnet.private_b.id],
-              "SecurityGroups" : [aws_security_group.lambda_sg.id],
-              "AssignPublicIp" : "DISABLED"
+              "Subnets" : var.use_vpc ? (var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]) : [aws_subnet.public_a.id, aws_subnet.public_b.id],
+              "SecurityGroups" : [aws_security_group.ecs_sg.id],
+              "AssignPublicIp" : var.use_vpc ? "DISABLED" : "ENABLED"
             }
           },
           "Overrides" : {
@@ -602,9 +614,9 @@ resource "aws_sfn_state_machine" "orchestrator" {
         ResultPath = "$.synthetic_result",
         Next       = "EndSyntheticProgress",
         Retry = [{
-          ErrorEquals     = ["States.TaskFailed"],
-          IntervalSeconds = 30,
-          MaxAttempts     = 2,
+          ErrorEquals     = ["States.ALL"],
+          IntervalSeconds = 15,
+          MaxAttempts     = 3,
           BackoffRate     = 2.0
         }],
         Catch = [{ ErrorEquals = ["States.ALL"], Next = "HandleSyntheticError", ResultPath = "$.error_info" }]
@@ -652,9 +664,9 @@ resource "aws_sfn_state_machine" "orchestrator" {
           "TaskDefinition.$" : "$.pipeline_config.Payload.resolved_task_definition_arn",
           "NetworkConfiguration" : {
             "AwsvpcConfiguration" : {
-              "Subnets" : [aws_subnet.private_a.id, aws_subnet.private_b.id],
-              "SecurityGroups" : [aws_security_group.lambda_sg.id],
-              "AssignPublicIp" : "DISABLED"
+              "Subnets" : var.use_vpc ? (var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]) : [aws_subnet.public_a.id, aws_subnet.public_b.id],
+              "SecurityGroups" : [aws_security_group.ecs_sg.id],
+              "AssignPublicIp" : var.use_vpc ? "DISABLED" : "ENABLED"
             }
           },
           "Overrides" : {
@@ -717,9 +729,9 @@ resource "aws_sfn_state_machine" "orchestrator" {
           "TaskDefinition.$" : "$.pipeline_config.Payload.resolved_task_definition_arn",
           "NetworkConfiguration" : {
             "AwsvpcConfiguration" : {
-              "Subnets" : [aws_subnet.private_a.id, aws_subnet.private_b.id],
-              "SecurityGroups" : [aws_security_group.lambda_sg.id],
-              "AssignPublicIp" : "DISABLED"
+              "Subnets" : var.use_vpc ? (var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]) : [aws_subnet.public_a.id, aws_subnet.public_b.id],
+              "SecurityGroups" : [aws_security_group.ecs_sg.id],
+              "AssignPublicIp" : var.use_vpc ? "DISABLED" : "ENABLED"
             }
           },
           "Overrides" : {
@@ -787,6 +799,12 @@ resource "aws_sfn_state_machine" "orchestrator" {
         },
         ResultPath = "$.index_create_result",
         Next       = "StartBulkIndexing",
+        Retry = [{
+          ErrorEquals     = ["States.ALL"],
+          IntervalSeconds = 15,
+          MaxAttempts     = 3,
+          BackoffRate     = 2.0
+        }],
         Catch      = [{ ErrorEquals = ["States.ALL"], Next = "HandleIndexingError", ResultPath = "$.error_info" }]
       },
 
@@ -799,9 +817,9 @@ resource "aws_sfn_state_machine" "orchestrator" {
           "TaskDefinition.$" : "$.pipeline_config.Payload.resolved_task_definition_arn",
           "NetworkConfiguration" : {
             "AwsvpcConfiguration" : {
-              "Subnets" : ["${aws_subnet.private_a.id}", "${aws_subnet.private_b.id}"],
-              "SecurityGroups" : ["${aws_security_group.lambda_sg.id}"],
-              "AssignPublicIp" : "DISABLED"
+              "Subnets" : var.use_vpc ? (var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]) : [aws_subnet.public_a.id, aws_subnet.public_b.id],
+              "SecurityGroups" : [aws_security_group.ecs_sg.id],
+              "AssignPublicIp" : var.use_vpc ? "DISABLED" : "ENABLED"
             }
           },
           "Overrides" : {

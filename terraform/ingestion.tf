@@ -24,17 +24,22 @@ resource "aws_lambda_function" "loader_lambda" {
   timeout     = 900 # 15 minutes
   memory_size = 1024
 
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_group_ids = [aws_security_group.lambda_sg.id]
+  dynamic "vpc_config" {
+    for_each = var.use_vpc ? [1] : []
+    content {
+      subnet_ids         = var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]
+      security_group_ids = [aws_security_group.lambda_sg.id]
+    }
   }
 
   environment {
     variables = {
       DB_SECRET_ARN       = aws_rds_cluster.main.master_user_secret[0].secret_arn
+      DB_CLUSTER_ARN      = aws_rds_cluster.main.arn
       DB_NAME             = aws_rds_cluster.main.database_name
       DB_HOST             = aws_rds_cluster.main.endpoint # Reader/Writer endpoint
       OPENSEARCH_ENDPOINT = aws_opensearch_domain.geocoding.endpoint
+      USE_DATA_API        = var.use_vpc ? "false" : "true"
     }
   }
 }

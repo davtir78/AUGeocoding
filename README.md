@@ -132,14 +132,47 @@ graph TD
     ECS --> OS
 ```
 
-### Data Flow
-
-1. **G-NAF ZIP** is downloaded from the official source by the `check_version` Lambda
-2. **Transformer Lambda** normalises CSV data into a staging format
-3. **ECS Fargate Loader** ingests into Aurora PostgreSQL with PostGIS spatial enrichment
-4. **Validator Lambda** runs data quality checks
-5. **OpenSearch Indexer** builds the fuzzy search index
 6. **Geocode Lambda** serves real-time queries against OpenSearch + Aurora
+
+### Architectural Modes & Cost Optimization
+
+This system supports three architectural modes via simple Terraform variables (`use_vpc` and `multi_az`), allowing you to balance cost, security, and high availability.
+
+| Feature | Zero-VPC (`use_vpc=false`) | Single-AZ VPC (`use_vpc=true`, `multi_az=false`) | Multi-AZ VPC (`use_vpc=true`, `multi_az=true`) |
+| :--- | :--- | :--- | :--- |
+| **Common Use Case** | POC / Local Dev | Dev / Test (Org Policy Compliant) | Production (High Availability) |
+| **Connectivity Cost** | **$0 / month** | **~$24 / month** (Single AZ Endpoints) | **~$72+ / month** (Multi-AZ Endpoints) |
+| **Security Model** | **Identity-Based** (SigV4, Public Endpoints) | **Network-Based** (Private Subnets, PrivateLink) | **Network-Based** (Private Subnets, PrivateLink) |
+| **Public Internet** | Resources can reach public internet. | **NO public internet access.** | **NO public internet access.** |
+| **Performance** | **Moderate**: Data API overhead. | **High**: Direct TCP connections/COPY. | **High**: Direct TCP connections/COPY. |
+| **High Availability** | N/A (Serverless routing) | Low (Dependencies tied to one AZ) | **High** (Endpoints across 3 AZs) |
+
+> [!TIP]
+> **Switching Modes:** To change the architecture, simply set the variables in a `.tfvars` file or via the CLI:
+> `terraform apply -var="use_vpc=true" -var="multi_az=false"`
+
+#### How Zero-VPC Works (Default)
+- **Database Access**: Uses the **Aurora Data API** (`boto3.client('rds-data')`) over HTTPS instead of traditional direct TCP connections.
+- **OpenSearch**: Configured with a **Public Endpoint**, but strictly secured via **IAM Access Policies (AWS SigV4)**.
+- **Networking**: Lambdas and ECS tasks run in public subnets or non-VPC mode, allowing them to reach AWS public APIs for free without NAT Gateways or VPC Endpoints.
+
+#### How VPC-Isolated Works
+When `use_vpc=true` is set, the system pivots from identity-based security to network-based security:
+- **Compute Placement**: Lambdas and ECS Tasks move from the public internet into **Private Subnets**.
+- **Data Path**: The system bypasses the Aurora Data API, connecting directly to the database via `psycopg2` for significant performance gains in bulk operations.
+- **PrivateLink**: Traffic to AWS services (S3, ECR, DynamoDB, Logs) stays on the AWS private backbone via **VPC Interface Endpoints**.
+- **Hybrid Internet Access**: Data discovery Lambdas (`check_version`, `downloader`) remain outside the VPC to maintain access to government APIs (data.gov.au) without the cost of a NAT Gateway, while sensitive processing remains isolated.
+
+##### 🟢 Single-AZ VPC (`multi_az=false`) - *The Cost-Effective Middle Ground*
+This mode provides a highly secure, network-isolated environment at a fraction of the cost of a full HA deployment.
+- **Pros**: Full compliance with organization policies prohibiting public internet access. drastically reduced latency for DB queries.
+- **Cons**: If the specific Availability Zone (e.g., `ap-southeast-2a`) experiences a rare service outage, the processing pipeline and search API may be temporarily unavailable.
+
+##### 🔵 Multi-AZ VPC (`multi_az=true`) - *Production High Availability*
+Enabling `multi_az` replicates the networking infrastructure across multiple availability zones.
+- **Improved Resilience**: VPC Endpoints are provisioned in all active subnets. If one AZ fails, traffic automatically routes to the healthy AZ.
+- **Database HA**: Aurora Serverless v2 will maintain a standby in a different AZ, ensuring near-instant failover.
+- **Scalability**: ECS Fargate tasks are distributed across zones, preventing a single hardware failure from impacting national data ingestion.
 
 ---
 
@@ -493,19 +526,16 @@ The Cognito User Pool is **federation-ready**. To add Entra ID as a SAML identit
 
 ---
 
-## Security
-
 | Layer | Implementation |
 |-------|---------------|
 | **Authentication** | Cognito JWT + API Key dual auth |
 | **Authorisation** | IAM roles (authenticated vs. unauthenticated) |
 | **Encryption at Rest** | Aurora (AES-256), S3 (SSE-S3), OpenSearch (AWS-managed) |
 | **Encryption in Transit** | TLS 1.2+ on all endpoints |
-| **Network** | VPC-isolated database, security groups, no public DB access |
-| **Secrets** | AWS Secrets Manager for DB credentials (auto-rotated) |
-| **Monitoring** | CloudWatch Alarms → SNS email alerts for pipeline failures, high error rates |
-| **Token Security** | Short-lived tokens (15 min), refresh rotation, revocation enabled |
-| **User Enumeration** | `prevent_user_existence_errors` enabled on Cognito |
+| **Network Security** | **Identity-Based (IAM)**: Public endpoints secured via SigV4 |
+| **Secrets** | AWS Secrets Manager for DB credentials (Data API auth) |
+| **Monitoring** | CloudWatch Alarms → SNS email alerts for pipeline failures |
+| **Cost Optimization** | **Zero-VPC**: Eliminated $72/mo in VPC Service Endpoints |
 
 ---
 

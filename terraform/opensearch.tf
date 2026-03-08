@@ -4,39 +4,16 @@
 # Can be stopped at night via AWS Console or Lambda scheduler
 # ============================================================================
 
-# Security Group for OpenSearch
-resource "aws_security_group" "opensearch_sg" {
-  name        = "aws-geocoding-opensearch-sg"
-  description = "Allow access to OpenSearch from Lambda"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description     = "HTTPS from Lambda"
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = [aws_security_group.lambda_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "aws-geocoding-opensearch-sg"
-  }
-}
-
-# IAM Service-Linked Role for OpenSearch (created automatically by AWS)
-# No need to define, but ensure it exists
+# Note: Security Group no longer needed for Zero-VPC as we use IAM auth for Public Endpoint
 
 # OpenSearch Domain
 resource "aws_opensearch_domain" "geocoding" {
   domain_name    = "geocoding-poc"
   engine_version = "OpenSearch_2.11"
+
+  # Zero-VPC: OpenSearch is public but secured by IAM (SigV4)
+  # For enhanced security, Re-enable vpc_options and add VPC Interface Endpoints
+  # (Requires ~$15/month for the OS endpoint)
 
   cluster_config {
     instance_type  = "t3.small.search" # Smallest instance, ~$0.036/hr
@@ -57,9 +34,12 @@ resource "aws_opensearch_domain" "geocoding" {
     throughput  = 125
   }
 
-  vpc_options {
-    subnet_ids         = [aws_subnet.private_a.id]
-    security_group_ids = [aws_security_group.opensearch_sg.id]
+  dynamic "vpc_options" {
+    for_each = var.use_vpc ? [1] : []
+    content {
+      subnet_ids         = var.multi_az ? [aws_subnet.private_a.id, aws_subnet.private_b.id] : [aws_subnet.private_a.id]
+      security_group_ids = [aws_security_group.vpc_endpoints_sg[0].id]
+    }
   }
 
   encrypt_at_rest {
@@ -75,7 +55,7 @@ resource "aws_opensearch_domain" "geocoding" {
     tls_security_policy = "Policy-Min-TLS-1-2-2019-07"
   }
 
-  # Access policy - allow Lambda role
+  # Access policy - allow Lambda role via IAM (Required for public endpoint)
   access_policies = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -84,7 +64,8 @@ resource "aws_opensearch_domain" "geocoding" {
         Principal = {
           AWS = [
             aws_iam_role.validator_role.arn,
-            aws_iam_role.lambda_exec_role.arn
+            aws_iam_role.lambda_exec_role.arn,
+            data.aws_caller_identity.current.arn # Allow current user for manual validation
           ]
         }
         Action   = "es:*"
@@ -97,6 +78,7 @@ resource "aws_opensearch_domain" "geocoding" {
     Name        = "aws-geocoding-opensearch"
     Environment = "poc"
     CostCenter  = "geocoding"
+    Networking  = "Zero-VPC"
   }
 }
 

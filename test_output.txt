@@ -1,0 +1,23 @@
+FF..
+======================================================================
+FAIL: test_query_builder_base_address (__main__.TestValidatorLogic.test_query_builder_base_address)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\source\AWSGeocoding\tests\unit_test_validator.py", line 56, in test_query_builder_base_address
+    self.assertEqual(base_boost[0]['term']['is_base_address']['boost'], 1000.0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 300.0 != 1000.0
+
+======================================================================
+FAIL: test_query_builder_unit_address (__main__.TestValidatorLogic.test_query_builder_unit_address)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Code\source\AWSGeocoding\tests\unit_test_validator.py", line 74, in test_query_builder_unit_address
+    self.assertEqual(base_boost[0]['term']['is_base_address']['boost'], 200.0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 100.0 != 200.0
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.005s
+
+FAILED (failures=2)

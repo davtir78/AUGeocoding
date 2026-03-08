@@ -75,8 +75,8 @@ resource "aws_security_group" "db_sg" {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.lambda_sg.id]
-    description     = "Allow logical access from Lambda"
+    security_groups = [aws_security_group.lambda_sg.id, aws_security_group.ecs_sg.id]
+    description     = "Allow logical access from Lambda and ECS"
   }
 
   tags = {

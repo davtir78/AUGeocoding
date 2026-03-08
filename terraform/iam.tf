@@ -32,15 +32,17 @@ resource "aws_iam_policy" "lambda_policy" {
         Effect   = "Allow",
         Resource = "arn:aws:logs:*:*:*"
       },
-      # VPC Access
+      # RDS Data API Access (Zero-VPC)
       {
         Action = [
-          "ec2:CreateNetworkInterface",
-          "ec2:DescribeNetworkInterfaces",
-          "ec2:DeleteNetworkInterface"
+          "rds-data:ExecuteStatement",
+          "rds-data:BatchExecuteStatement",
+          "rds-data:BeginTransaction",
+          "rds-data:CommitTransaction",
+          "rds-data:RollbackTransaction"
         ],
         Effect   = "Allow",
-        Resource = "*"
+        Resource = aws_rds_cluster.main.arn
       },
       # S3 Access
       {
@@ -80,6 +82,11 @@ resource "aws_iam_policy" "lambda_policy" {
 resource "aws_iam_role_policy_attachment" "lambda_attach" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = aws_iam_policy.lambda_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_vpc_attach" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 # ECS Task Execution Role (Pulling images, logging)
