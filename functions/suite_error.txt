@@ -1,0 +1,70 @@
+(node:3296) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+FAIL src/tests/unit/architect.test.ts (5.482 s)
+  ● ArchitectClient Unit Tests › Should handle malformed JSON gracefully
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "failed"
+    Received: "success"
+
+    [0m [90m 80 |[39m
+     [90m 81 |[39m         [90m// Architect uses 'jsonrepair', but if it fails completely it returns a "failed" item[39m
+    [31m[1m>[22m[39m[90m 82 |[39m         expect(result[33m?[39m[33m.[39mextraction_status)[33m.[39mtoBe([32m"failed"[39m)[33m;[39m
+     [90m    |[39m                                           [31m[1m^[22m[39m
+     [90m 83 |[39m         expect(result[33m?[39m[33m.[39mtitle)[33m.[39mtoBe([32m"Extraction Failed"[39m)[33m;[39m
+     [90m 84 |[39m         expect(result[33m?[39m[33m.[39mquestion_text)[33m.[39mtoBe([32m"Raw Input"[39m)[33m;[39m [90m// Fallback to raw[39m
+     [90m 85 |[39m     })[33m;[39m[0m
+
+      at Object.<anonymous> (src/tests/unit/architect.test.ts:82:43)
+
+FAIL src/tests/unit/librarian.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\node-fetch\src\index.js:9
+    import http from 'node:http';
+    ^^^^^^
+
+    SyntaxError: Cannot use import statement outside a module
+
+    [0m [90m 1 |[39m [36mimport[39m vectors [36mfrom[39m [32m'../data/curriculum-vectors.json'[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m fetch [36mfrom[39m [32m'node-fetch'[39m[33m;[39m
+     [90m   |[39m [31m[1m^[22m[39m
+     [90m 3 |[39m
+     [90m 4 |[39m [36minterface[39m [33mStandardVector[39m {
+     [90m 5 |[39m     id[33m:[39m string[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1318:40)
+      at Object.<anonymous> (src/lib/rag.ts:2:1)
+      at Object.<anonymous> (src/knowledge/librarian.ts:4:1)
+      at Object.<anonymous> (src/tests/unit/librarian.test.ts:3:1)
+
+(node:23836) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+Test Suites: 2 failed, 2 total
+Tests:       1 failed, 2 passed, 3 total
+Snapshots:   0 total
+Time:        6.417 s, estimated 12 s
+Ran all test suites matching src/tests/unit/librarian.test.ts|src/tests/unit/architect.test.ts.

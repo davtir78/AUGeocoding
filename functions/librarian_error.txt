@@ -1,0 +1,26 @@
+FAIL src/tests/unit/librarian.test.ts
+  ● Test suite failed to run
+
+    [96msrc/tests/unit/librarian.test.ts[0m:[93m37[0m:[93m53[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ empty: boolean; docs: { id: string; data: () => { reference_material_embedding: number[]; }; }[]; }' is not assignable to parameter of type 'never'.
+
+    [7m 37[0m         (mockDb.get as jest.Mock).mockResolvedValue({
+    [7m   [0m [91m                                                    ~[0m
+    [7m 38[0m             empty: false,
+    [7m   [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    [7m...[0m 
+    [7m 44[0m             }]
+    [7m   [0m [91m~~~~~~~~~~~~~~[0m
+    [7m 45[0m         });
+    [7m   [0m [91m~~~~~~~~~[0m
+    [96msrc/tests/unit/librarian.test.ts[0m:[93m58[0m:[93m53[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ empty: boolean; }' is not assignable to parameter of type 'never'.
+
+    [7m58[0m         (mockDb.get as jest.Mock).mockResolvedValue({ empty: true });
+    [7m  [0m [91m                                                    ~~~~~~~~~~~~~~~[0m
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        5.627 s
+Ran all test suites matching src/tests/unit/librarian.test.ts.
+(node:8532) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)

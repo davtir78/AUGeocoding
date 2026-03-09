@@ -1,0 +1,50 @@
+FAIL src/tests/unit/architect.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\node-fetch\src\index.js:9
+    import http from 'node:http';
+    ^^^^^^
+
+    SyntaxError: Cannot use import statement outside a module
+
+    [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m fetch [36mfrom[39m [32m'node-fetch'[39m[33m;[39m
+     [90m   |[39m [31m[1m^[22m[39m
+     [90m 2 |[39m [36mimport[39m { logger } [36mfrom[39m [32m'firebase-functions'[39m[33m;[39m
+     [90m 3 |[39m [36mimport[39m [33m*[39m [36mas[39m admin [36mfrom[39m [32m'firebase-admin'[39m[33m;[39m
+     [90m 4 |[39m [36mimport[39m { [33mModelType[39m[33m,[39m getModelsForType[33m,[39m getDefaultModelForType[33m,[39m getChatStrategyModels } [36mfrom[39m [32m'../config/model-config'[39m[33m;[39m[0m
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1318:40)
+      at Object.<anonymous> (src/lib/openrouter.ts:1:1)
+      at Object.<anonymous> (src/lib/safety.ts:3:1)
+      at Object.<anonymous> (src/knowledge/architect.ts:4:1)
+      at Object.<anonymous> (src/tests/unit/architect.test.ts:3:1)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        4.285 s
+Ran all test suites matching src/tests/unit/architect.test.ts.
+(node:26356) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)

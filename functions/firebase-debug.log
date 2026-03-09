@@ -1,0 +1,42 @@
+[debug] [2026-01-01T11:17:08.629Z] ----------------------------------------------------------------------
+[debug] [2026-01-01T11:17:08.638Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\davti\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js functions:secrets:set OPENAI_API_KEY
+[debug] [2026-01-01T11:17:08.638Z] CLI Version:   14.17.0
+[debug] [2026-01-01T11:17:08.638Z] Platform:      win32
+[debug] [2026-01-01T11:17:08.638Z] Node Version:  v25.0.0
+[debug] [2026-01-01T11:17:08.638Z] Time:          Thu Jan 01 2026 22:17:08 GMT+1100 (Australian Eastern Daylight Time)
+[debug] [2026-01-01T11:17:08.639Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-01T11:17:08.641Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-01-01T11:17:08.887Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-01T11:17:08.887Z] > authorizing via signed-in user (davtir@gmail.com)
+[debug] [2026-01-01T11:17:08.888Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-01T11:17:08.888Z] > authorizing via signed-in user (davtir@gmail.com)
+[debug] [2026-01-01T11:17:08.888Z] [iam] checking project scholars-alley-dev for permissions ["firebase.projects.get","secretmanager.secrets.create","secretmanager.secrets.get","secretmanager.secrets.update","secretmanager.versions.add"]
+[debug] [2026-01-01T11:17:08.889Z] Checked if tokens are valid: false, expires at: 1767185322682
+[debug] [2026-01-01T11:17:08.889Z] Checked if tokens are valid: false, expires at: 1767185322682
+[debug] [2026-01-01T11:17:08.889Z] > refreshing access token with scopes: []
+[debug] [2026-01-01T11:17:08.891Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-01T11:17:08.891Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-01T11:17:09.177Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-01T11:17:09.177Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-01T11:17:09.201Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/scholars-alley-dev:testIamPermissions [none]
+[debug] [2026-01-01T11:17:09.201Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/scholars-alley-dev:testIamPermissions x-goog-quota-user=projects/scholars-alley-dev
+[debug] [2026-01-01T11:17:09.201Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/scholars-alley-dev:testIamPermissions {"permissions":["firebase.projects.get","secretmanager.secrets.create","secretmanager.secrets.get","secretmanager.secrets.update","secretmanager.versions.add"]}
+[debug] [2026-01-01T11:17:09.334Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-01-01T11:17:09.334Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-01-01T11:17:10.419Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/scholars-alley-dev:testIamPermissions 200
+[debug] [2026-01-01T11:17:10.419Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/scholars-alley-dev:testIamPermissions {"permissions":["firebase.projects.get","secretmanager.secrets.create","secretmanager.secrets.get","secretmanager.secrets.update","secretmanager.versions.add"]}
+[debug] [2026-01-01T11:17:10.420Z] Checked if tokens are valid: true, expires at: 1767269827178
+[debug] [2026-01-01T11:17:10.421Z] Checked if tokens are valid: true, expires at: 1767269827178
+[debug] [2026-01-01T11:17:10.421Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/scholars-alley-dev [none]
+[debug] [2026-01-01T11:17:10.696Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/scholars-alley-dev 200
+[debug] [2026-01-01T11:17:10.697Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/scholars-alley-dev {"projectNumber":"811396178232","projectId":"scholars-alley-dev","lifecycleState":"ACTIVE","name":"scholars-alley-dev","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-08-04T10:19:51.780607Z"}
+[debug] [2026-01-01T11:17:10.698Z] Checked if tokens are valid: true, expires at: 1767269827178
+[debug] [2026-01-01T11:17:10.698Z] Checked if tokens are valid: true, expires at: 1767269827178
+[debug] [2026-01-01T11:17:10.698Z] >>> [apiv2][query] GET https://secretmanager.googleapis.com/v1/projects/scholars-alley-dev/secrets/OPENAI_API_KEY [none]
+[debug] [2026-01-01T11:17:11.172Z] <<< [apiv2][status] GET https://secretmanager.googleapis.com/v1/projects/scholars-alley-dev/secrets/OPENAI_API_KEY 404
+[debug] [2026-01-01T11:17:11.172Z] <<< [apiv2][body] GET https://secretmanager.googleapis.com/v1/projects/scholars-alley-dev/secrets/OPENAI_API_KEY {"error":{"code":404,"message":"Secret [projects/811396178232/secrets/OPENAI_API_KEY] not found.","status":"NOT_FOUND"}}
+[debug] [2026-01-01T11:17:11.173Z] Checked if tokens are valid: true, expires at: 1767269827178
+[debug] [2026-01-01T11:17:11.173Z] Checked if tokens are valid: true, expires at: 1767269827178
+[debug] [2026-01-01T11:17:11.174Z] >>> [apiv2][query] POST https://secretmanager.googleapis.com/v1/projects/scholars-alley-dev/secrets secretId=OPENAI_API_KEY
+[debug] [2026-01-01T11:17:11.174Z] >>> [apiv2][body] POST https://secretmanager.googleapis.com/v1/projects/scholars-alley-dev/secrets {"name":"OPENAI_API_KEY","replication":{"automatic":{}},"labels":{"firebase-managed":"functions"}}

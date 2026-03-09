@@ -1,0 +1,126 @@
+--- Starting Comprehensive Artifact Integration Test ---
+
+
+>>> PROCESSING: fahrenheit 451 extract.png
+Uploading fahrenheit 451 extract.png...
+Submitting Generation Job...
+Job ID: z5xqwjpjv45Gj4kVvGSV. Waiting...
+.....Job Completed.
+Job Data Dump: {
+  "userId": "dUzDRJkK7SOrtdGWBQi6ikrSyPk1",
+  "type": "artifact",
+  "input": {
+    "fileUrl": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937873576_fahrenheit_451_extract.png",
+    "type": "test_paper",
+    "sourceName": "Fahrenheit Integration Test",
+    "yearLevel": "Year 10",
+    "text": "Integration Test for fahrenheit 451 extract.png"
+  },
+  "createdAt": {
+    "_seconds": 1769937892,
+    "_nanoseconds": 260000000
+  },
+  "result": {
+    "success": true,
+    "count": 1,
+    "inferredSubject": "Literature",
+    "status": "success"
+  },
+  "completedAt": {
+    "_seconds": 1769937902,
+    "_nanoseconds": 376000000
+  },
+  "status": "completed",
+  "updatedAt": {
+    "_seconds": 1769937902,
+    "_nanoseconds": 376000000
+  }
+}
+Waiting 5s for Firestore consistency...
+Verifying Output for Source: Fahrenheit Integration Test...
+Total Items for User: 110
+❌ Wrong answer. Expected "fireman", got: "undefined"
+
+
+>>> PROCESSING: english text on drought.png
+Uploading english text on drought.png...
+Submitting Generation Job...
+Job ID: djgEopFZd2sex5zYbHkV. Waiting...
+......Job Completed.
+Job Data Dump: {
+  "userId": "dUzDRJkK7SOrtdGWBQi6ikrSyPk1",
+  "type": "artifact",
+  "input": {
+    "fileUrl": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937911087_english_text_on_drought.png",
+    "type": "worksheet",
+    "sourceName": "Drought Integration Test",
+    "yearLevel": "Year 10",
+    "text": "Integration Test for english text on drought.png"
+  },
+  "createdAt": {
+    "_seconds": 1769937911,
+    "_nanoseconds": 335000000
+  },
+  "result": {
+    "success": true,
+    "count": 1,
+    "inferredSubject": "English",
+    "status": "success"
+  },
+  "completedAt": {
+    "_seconds": 1769937922,
+    "_nanoseconds": 325000000
+  },
+  "status": "completed",
+  "updatedAt": {
+    "_seconds": 1769937922,
+    "_nanoseconds": 325000000
+  }
+}
+Waiting 5s for Firestore consistency...
+Verifying Output for Source: Drought Integration Test...
+Total Items for User: 111
+❌ Wrong answer. Expected "325", got: "undefined"
+
+
+>>> PROCESSING: maths 1.png
+Uploading maths 1.png...
+Submitting Generation Job...
+Job ID: bOwue7TW7V3ubP32mCAP. Waiting...
+....Job Completed.
+Job Data Dump: {
+  "userId": "dUzDRJkK7SOrtdGWBQi6ikrSyPk1",
+  "type": "artifact",
+  "input": {
+    "fileUrl": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937930038_maths_1.png",
+    "type": "worksheet",
+    "sourceName": "Math Integration Test",
+    "yearLevel": "Year 10",
+    "text": "Integration Test for maths 1.png"
+  },
+  "createdAt": {
+    "_seconds": 1769937930,
+    "_nanoseconds": 248000000
+  },
+  "result": {
+    "success": true,
+    "count": 1,
+    "inferredSubject": "math",
+    "status": "success"
+  },
+  "completedAt": {
+    "_seconds": 1769937936,
+    "_nanoseconds": 887000000
+  },
+  "status": "completed",
+  "updatedAt": {
+    "_seconds": 1769937936,
+    "_nanoseconds": 887000000
+  }
+}
+Waiting 5s for Firestore consistency...
+Verifying Output for Source: Math Integration Test...
+Total Items for User: 112
+❌ Missing text: "calculate"
+
+❌ SOME TESTS FAILED

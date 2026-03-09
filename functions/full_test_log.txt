@@ -1,0 +1,147 @@
+--- Starting Comprehensive Artifact Integration Test ---
+
+
+>>> PROCESSING: fahrenheit 451 extract.png
+Uploading fahrenheit 451 extract.png...
+Submitting Generation Job...
+Job ID: ABLeXr7LSOGuC4HZyTGY. Waiting...
+.Job Completed.
+Job Data Dump: {
+  "userId": "dUzDRJkK7SOrtdGWBQi6ikrSyPk1",
+  "type": "artifact",
+  "input": {
+    "fileUrl": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937801218_fahrenheit 451 extract.png",
+    "type": "test_paper",
+    "sourceName": "Fahrenheit Integration Test",
+    "yearLevel": "Year 10",
+    "text": "Integration Test for fahrenheit 451 extract.png"
+  },
+  "createdAt": {
+    "_seconds": 1769937820,
+    "_nanoseconds": 3000000
+  },
+  "result": {
+    "success": false,
+    "count": 0,
+    "inferredSubject": "Unknown",
+    "status": "failed",
+    "error": "OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937801218_fahrenheit 451 extract.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google AI Studio\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}"
+  },
+  "completedAt": {
+    "_seconds": 1769937820,
+    "_nanoseconds": 960000000
+  },
+  "status": "completed",
+  "updatedAt": {
+    "_seconds": 1769937820,
+    "_nanoseconds": 960000000
+  }
+}
+Waiting 5s for Firestore consistency...
+Verifying Output for Source: Fahrenheit Integration Test...
+Total Items for User: 109
+❌ No knowledge items found for source_name: "Fahrenheit Integration Test"
+Dumping 5 most recent items for user:
+- ID: BS8OSgS7UD6tsUSrMfqH, Source: "Fahrenheit E2E 1769812196834", Title: "Identifying Montag's Profession"
+- ID: v69NdQ7NcVfEAhz9w81r, Source: "Multi Image Test Part 2", Title: "Understanding the Elements of Dance"
+- ID: T2iS59pkXuQDOPK66w4Z, Source: "Multi Image Test Part 2", Title: "Understanding Reflection in Time Display"
+- ID: NeCI4pljwG7I6mHES0It, Source: "Multi Image Test Part 2", Title: "Understanding the Elements of Dance"
+- ID: JWIjv2R9NhWpLyPxC8Bk, Source: "Multi Image Test Part 2", Title: "Understanding Dance Elements"
+
+
+>>> PROCESSING: english text on drought.png
+Uploading english text on drought.png...
+Submitting Generation Job...
+Job ID: cUbkOwCmz7GcFeP8lbSZ. Waiting...
+.Job Completed.
+Job Data Dump: {
+  "userId": "dUzDRJkK7SOrtdGWBQi6ikrSyPk1",
+  "type": "artifact",
+  "input": {
+    "fileUrl": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937829055_english text on drought.png",
+    "type": "worksheet",
+    "sourceName": "Drought Integration Test",
+    "yearLevel": "Year 10",
+    "text": "Integration Test for english text on drought.png"
+  },
+  "createdAt": {
+    "_seconds": 1769937829,
+    "_nanoseconds": 222000000
+  },
+  "result": {
+    "success": false,
+    "count": 0,
+    "inferredSubject": "Unknown",
+    "status": "failed",
+    "error": "OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937829055_english text on drought.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}"
+  },
+  "completedAt": {
+    "_seconds": 1769937830,
+    "_nanoseconds": 210000000
+  },
+  "status": "completed",
+  "updatedAt": {
+    "_seconds": 1769937830,
+    "_nanoseconds": 210000000
+  }
+}
+Waiting 5s for Firestore consistency...
+Verifying Output for Source: Drought Integration Test...
+Total Items for User: 109
+❌ No knowledge items found for source_name: "Drought Integration Test"
+Dumping 5 most recent items for user:
+- ID: BS8OSgS7UD6tsUSrMfqH, Source: "Fahrenheit E2E 1769812196834", Title: "Identifying Montag's Profession"
+- ID: v69NdQ7NcVfEAhz9w81r, Source: "Multi Image Test Part 2", Title: "Understanding the Elements of Dance"
+- ID: T2iS59pkXuQDOPK66w4Z, Source: "Multi Image Test Part 2", Title: "Understanding Reflection in Time Display"
+- ID: NeCI4pljwG7I6mHES0It, Source: "Multi Image Test Part 2", Title: "Understanding the Elements of Dance"
+- ID: JWIjv2R9NhWpLyPxC8Bk, Source: "Multi Image Test Part 2", Title: "Understanding Dance Elements"
+
+
+>>> PROCESSING: maths 1.png
+Uploading maths 1.png...
+Submitting Generation Job...
+Job ID: qVMasFEbDx9bl99Oq6gL. Waiting...
+.Job Completed.
+Job Data Dump: {
+  "userId": "dUzDRJkK7SOrtdGWBQi6ikrSyPk1",
+  "type": "artifact",
+  "input": {
+    "fileUrl": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937837787_maths 1.png",
+    "type": "worksheet",
+    "sourceName": "Math Integration Test",
+    "yearLevel": "Year 10",
+    "text": "Integration Test for maths 1.png"
+  },
+  "createdAt": {
+    "_seconds": 1769937837,
+    "_nanoseconds": 955000000
+  },
+  "result": {
+    "success": false,
+    "count": 0,
+    "inferredSubject": "Unknown",
+    "status": "failed",
+    "error": "OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/integration/1769937837787_maths 1.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}"
+  },
+  "completedAt": {
+    "_seconds": 1769937839,
+    "_nanoseconds": 178000000
+  },
+  "status": "completed",
+  "updatedAt": {
+    "_seconds": 1769937839,
+    "_nanoseconds": 178000000
+  }
+}
+Waiting 5s for Firestore consistency...
+Verifying Output for Source: Math Integration Test...
+Total Items for User: 109
+❌ No knowledge items found for source_name: "Math Integration Test"
+Dumping 5 most recent items for user:
+- ID: BS8OSgS7UD6tsUSrMfqH, Source: "Fahrenheit E2E 1769812196834", Title: "Identifying Montag's Profession"
+- ID: v69NdQ7NcVfEAhz9w81r, Source: "Multi Image Test Part 2", Title: "Understanding the Elements of Dance"
+- ID: T2iS59pkXuQDOPK66w4Z, Source: "Multi Image Test Part 2", Title: "Understanding Reflection in Time Display"
+- ID: NeCI4pljwG7I6mHES0It, Source: "Multi Image Test Part 2", Title: "Understanding the Elements of Dance"
+- ID: JWIjv2R9NhWpLyPxC8Bk, Source: "Multi Image Test Part 2", Title: "Understanding Dance Elements"
+
+❌ SOME TESTS FAILED

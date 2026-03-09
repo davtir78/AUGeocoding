@@ -1,0 +1,68 @@
+--- Starting Fahrenheit 451 Extraction Verification Test ---
+Uploading test image to Storage...
+Test Image URL: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/repro_fahrenheit/1769379624754_fahrenheit.png
+Calling analyzeArtifact...
+[ArtifactAnalyzer] Starting two-stage analysis for user TEST_USER_ID {
+  type: 'test_paper',
+  sourceName: 'Fahrenheit 451 Test',
+  yearLevel: 'Year 10'
+}
+[ArtifactAnalyzer] Fetching live standards for Year 10...
+[ArtifactAnalyzer] Retrieved 400 standards.
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-3-flash-preview"}
+[ArtifactAnalyzer] Stage 1 Raw Discovery JSON: {"inferred_subject": "English Literature", "questions": [{"id": "Full Context", "bbox": [0, 0, 1000, 1000], "brief_desc": "Excerpt from Fahrenheit 451 used to identify Montag's profession."}]}
+[ArtifactAnalyzer] Scout found 1 items. Clarification: None
+[ArtifactAnalyzer] Downloading image for cropping: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/repro_fahrenheit/1769379624754_fahrenheit.png
+[ArtifactAnalyzer] Stage 2: The Scribe (Targeted Extraction Loop - Parallel)...
+[ArtifactAnalyzer] Starting parallel task for item Full Context: Excerpt from Fahrenheit 451 used to identify Montag's profession.
+[ArtifactAnalyzer] Stage 2: Item Full Context - Calling model 3...
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-3-pro-preview"}
+[ArtifactAnalyzer] Stage 2: Item Full Context - Raw AI Response (Attempt 1):
+{
+  "title": "Fahrenheit 451 Extract: Character Identification",
+  "question_text": "Extract from: Fahrenheit 451 by Ray Bradbury (Ballantine Books, USA, 1953)\n\nIt was a pleasure to burn.\n      It was a special pleasure to see things eaten, to see
+[ArtifactAnalyzer] Stage 2: Item Full Context - Successfully parsed item.
+[ArtifactAnalyzer] Consolidating 1 items into Firestore...
+[ArtifactAnalyzer] Successfully processed 1 items.
+Analysis Result Summary: {
+  "success": true,
+  "count": 1,
+  "inferredSubject": "English Literature"
+}
+Querying Firestore for created item...
+❌ TEST ENCOUNTERED ERROR: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/scholars-alley-dev/firestore/indexes?create_composite=Clpwcm9qZWN0cy9zY2hvbGFycy1hbGxleS1kZXYvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL2tub3dsZWRnZV9pdGVtcy9pbmRleGVzL18QARoPCgtzb3VyY2VfbmFtZRABGg4KCmNyZWF0ZWRfYXQQAhoMCghfX25hbWVfXxAC
+    at callErrorFromStatus (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@grpc\grpc-js\src\call.ts:84:17)
+    at Object.onReceiveStatus (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@grpc\grpc-js\src\client.ts:612:51)
+    at Object.onReceiveStatus (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@grpc\grpc-js\src\client-interceptors.ts:424:48)
+    at C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@grpc\grpc-js\src\resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@grpc\grpc-js\src\client.ts:595:42)
+    at ServiceClientImpl.<anonymous> (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@grpc\grpc-js\src\make-client.ts:189:15)
+    at C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\google-gax\src\streamingCalls\streamingApiCaller.ts:59:19
+    at C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\google-gax\src\normalCalls\timeout.ts:54:13
+    at Object.request (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\google-gax\src\streamingCalls\streaming.ts:331:28)
+    at makeRequest (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\google-gax\src\streamingCalls\streaming.ts:322:29)
+    at StreamingApiCaller.call (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\google-gax\src\streamingCalls\streamingApiCaller.ts:89:12)
+Caused by: Error
+    at QueryUtil._getResponse (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at NoopContextManager.with (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@opentelemetry\api\src\context\NoopContextManager.ts:31:15)
+    at ContextAPI.with (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@opentelemetry\api\src\api\context.ts:77:42)
+    at NoopTracer.startActiveSpan (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@opentelemetry\api\src\trace\NoopTracer.ts:98:27)
+    at ProxyTracer.startActiveSpan (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@opentelemetry\api\src\trace\ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\davti\OneDrive\Documents\Tech\Code\scholars-alley\functions\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28) {
+  code: 9,
+  details: 'The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/scholars-alley-dev/firestore/indexes?create_composite=Clpwcm9qZWN0cy9zY2hvbGFycy1hbGxleS1kZXYvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL2tub3dsZWRnZV9pdGVtcy9pbmRleGVzL18QARoPCgtzb3VyY2VfbmFtZRABGg4KCmNyZWF0ZWRfYXQQAhoMCghfX25hbWVfXxAC',
+  metadata: Metadata {
+    internalRepr: Map(1) { 'x-debug-tracking-id' => [Array] },
+    opaqueData: Map(0) {},
+    options: {}
+  }
+}

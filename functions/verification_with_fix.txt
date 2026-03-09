@@ -1,0 +1,74 @@
+--- Starting Hybrid Analysis Verification Test ---
+Uploading test image to Storage...
+Test Image URL: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/hybrid_analysis/1769326679471_drought.png
+Test Image URL: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/hybrid_analysis/1769326679471_drought.png
+Calling analyzeArtifact...
+[ArtifactAnalyzer] Starting two-stage analysis for user TEST_USER_ID {
+  type: 'test_paper',
+  sourceName: 'Unit Test Hybrid',
+  yearLevel: 'Year 9'
+}
+[ArtifactAnalyzer] Fetching live standards for Year 9...
+[ArtifactAnalyzer] Retrieved 132 standards.
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-3-flash-preview"}
+[ArtifactAnalyzer] Stage 1 Raw Discovery JSON: {
+  "inferred_subject": "English / Literacy",
+  "questions": [
+    {
+      "id": "Full Context",
+      "bbox": [
+        0,
+        0,
+        1000,
+        1000
+      ],
+      "brief_desc": "Reading passage about drought impact on cattle for comprehension."
+    }
+  ]
+}
+[ArtifactAnalyzer] Scout found 1 items
+[ArtifactAnalyzer] Downloading image for cropping: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/hybrid_analysis/1769326679471_drought.png
+[ArtifactAnalyzer] Stage 2: The Scribe (Targeted Extraction Loop - Parallel)...
+[ArtifactAnalyzer] Starting parallel task for item Full Context: Reading passage about drought impact on cattle for comprehension.
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-3-pro-preview"}
+[ArtifactAnalyzer] Stage 2: Item Full Context returned an EMPTY response in attempt 1.
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-3-flash-preview"}
+[ArtifactAnalyzer] Consolidating 1 items into Firestore...
+[ArtifactAnalyzer] Successfully processed 1 items.
+Analysis Result: {
+  "success": true,
+  "count": 1,
+  "inferredSubject": "English / Literacy"
+}
+Querying Firestore for created item...
+Created Item Data: {
+  "uid": "TEST_USER_ID",
+  "title": "Literary Text: Calf Count",
+  "source_name": "Unit Test Hybrid",
+  "source_artifact_type": "test_paper",
+  "subject": "English / Literacy",
+  "year_level": "Year 9",
+  "strand": "",
+  "extracted_text": "How many calves are there in total?",
+  "student_answer": "",
+  "ideal_answer": "325",
+  "explanation": "The text states, \"325 in total. It will be fewer come morning.\"",
+  "mastery_status": "needs_review",
+  "extraction_status": "success",
+  "extraction_error": "",
+  "curriculum_links": [
+    {
+      "code": "AC9E9LA01",
+      "topic": ""
+    }
+  ],
+  "image_url": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325906920_Full Context.png",
+  "source_image_url": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/hybrid_analysis/1769325882079_drought.png",
+  "crop_image_url": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325906920_Full Context.png",
+  "created_at": {
+    "_seconds": 1769325918,
+    "_nanoseconds": 670000000
+  }
+}
+✅ verified: '325' found in analysis.
+✅ TEST PASSED

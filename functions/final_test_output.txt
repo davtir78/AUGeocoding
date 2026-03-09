@@ -1,0 +1,70 @@
+--- Starting Hybrid Analysis Verification Test ---
+Uploading test image to Storage...
+Test Image URL: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/hybrid_analysis/1769325956573_drought.png
+Test Image URL: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/hybrid_analysis/1769325956573_drought.png
+Calling analyzeArtifact...
+[ArtifactAnalyzer] Starting two-stage analysis for user TEST_USER_ID {
+  type: 'test_paper',
+  sourceName: 'Unit Test Hybrid',
+  yearLevel: 'Year 9'
+}
+[ArtifactAnalyzer] Fetching live standards for Year 9...
+[ArtifactAnalyzer] Retrieved 132 standards.
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-3-flash-preview"}
+[ArtifactAnalyzer] Stage 1 Raw Discovery JSON: {"inferred_subject": "English / Literacy", "questions": [{"id": "Full Context", "bbox": [0, 0, 1000, 1000], "brief_desc": "Full text narrative about life on a farm during drought."}]}
+[ArtifactAnalyzer] Scout found 1 items
+[ArtifactAnalyzer] Downloading image for cropping: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/hybrid_analysis/1769325956573_drought.png
+[ArtifactAnalyzer] Stage 2: The Scribe (Targeted Extraction Loop - Parallel)...
+[ArtifactAnalyzer] Starting parallel task for item Full Context: Full text narrative about life on a farm during drought.
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-3-pro-preview"}
+{"status":400,"body":"{\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google AI Studio\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}","model":"google/gemini-3-pro-preview","severity":"ERROR","message":"Error: OpenRouter API call failed\n    at entryFromArgs (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\node_modules\\firebase-functions\\lib\\logger\\index.js:133:19)\n    at Object.error (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\node_modules\\firebase-functions\\lib\\logger\\index.js:120:11)\n    at callOpenRouterAPI (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:57:24)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async callOpenRouterWithFallback (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:119:28)\n    at async C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:273:38\n    at async Promise.all (index 0)\n    at async analyzeArtifact (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:335:24)\n    at async runTest (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\tests\\verifyHybridAnalysis.spec.ts:61:24)"}
+{"severity":"ERROR","message":"LLM Network Error Error: OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google AI Studio\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}\n    at callOpenRouterAPI (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:65:23)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async callOpenRouterWithFallback (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:119:28)\n    at async C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:273:38\n    at async Promise.all (index 0)\n    at async analyzeArtifact (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:335:24)\n    at async runTest (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\tests\\verifyHybridAnalysis.spec.ts:61:24)"}
+{"severity":"WARNING","message":"[OpenRouter] Model google/gemini-3-pro-preview failed. Error: OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google AI Studio\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}"}
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-3-flash-preview"}
+{"status":400,"body":"{\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google AI Studio\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}","model":"google/gemini-3-flash-preview","severity":"ERROR","message":"Error: OpenRouter API call failed\n    at entryFromArgs (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\node_modules\\firebase-functions\\lib\\logger\\index.js:133:19)\n    at Object.error (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\node_modules\\firebase-functions\\lib\\logger\\index.js:120:11)\n    at callOpenRouterAPI (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:57:24)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async callOpenRouterWithFallback (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:119:28)\n    at async C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:273:38\n    at async Promise.all (index 0)\n    at async analyzeArtifact (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:335:24)\n    at async runTest (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\tests\\verifyHybridAnalysis.spec.ts:61:24)"}
+{"severity":"ERROR","message":"LLM Network Error Error: OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google AI Studio\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}\n    at callOpenRouterAPI (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:65:23)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async callOpenRouterWithFallback (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:119:28)\n    at async C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:273:38\n    at async Promise.all (index 0)\n    at async analyzeArtifact (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:335:24)\n    at async runTest (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\tests\\verifyHybridAnalysis.spec.ts:61:24)"}
+{"severity":"WARNING","message":"[OpenRouter] Model google/gemini-3-flash-preview failed. Error: OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google AI Studio\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}"}
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemini-2.5-flash"}
+{"status":400,"body":"{\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}","model":"google/gemini-2.5-flash","severity":"ERROR","message":"Error: OpenRouter API call failed\n    at entryFromArgs (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\node_modules\\firebase-functions\\lib\\logger\\index.js:133:19)\n    at Object.error (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\node_modules\\firebase-functions\\lib\\logger\\index.js:120:11)\n    at callOpenRouterAPI (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:57:24)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async callOpenRouterWithFallback (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:119:28)\n    at async C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:273:38\n    at async Promise.all (index 0)\n    at async analyzeArtifact (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:335:24)\n    at async runTest (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\tests\\verifyHybridAnalysis.spec.ts:61:24)"}
+{"severity":"ERROR","message":"LLM Network Error Error: OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}\n    at callOpenRouterAPI (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:65:23)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async callOpenRouterWithFallback (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\lib\\openrouter.ts:119:28)\n    at async C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:273:38\n    at async Promise.all (index 0)\n    at async analyzeArtifact (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\knowledge\\analyzer.ts:335:24)\n    at async runTest (C:\\Users\\davti\\OneDrive\\Documents\\Tech\\Code\\scholars-alley\\functions\\src\\tests\\verifyHybridAnalysis.spec.ts:61:24)"}
+{"severity":"WARNING","message":"[OpenRouter] Model google/gemini-2.5-flash failed. Error: OpenRouter error: 400 {\"error\":{\"message\":\"Invalid URL format: https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325979277_Full Context.png\",\"code\":400,\"metadata\":{\"provider_name\":\"Google\"}},\"user_id\":\"user_2vuG0fYTehQFEZt0TYtlau5Yt2n\"}"}
+{"severity":"INFO","message":"[OpenRouter] Attempting call with model: google/gemma-3-12b-it"}
+[ArtifactAnalyzer] Consolidating 1 items into Firestore...
+[ArtifactAnalyzer] Successfully processed 1 items.
+Analysis Result: {
+  "success": true,
+  "count": 1,
+  "inferredSubject": "English / Literacy"
+}
+Querying Firestore for created item...
+Created Item Data: {
+  "uid": "TEST_USER_ID",
+  "title": "Literary Text: Calf Count",
+  "source_name": "Unit Test Hybrid",
+  "source_artifact_type": "test_paper",
+  "subject": "English / Literacy",
+  "year_level": "Year 9",
+  "strand": "",
+  "extracted_text": "How many calves are there in total?",
+  "student_answer": "",
+  "ideal_answer": "325",
+  "explanation": "The text states, \"325 in total. It will be fewer come morning.\"",
+  "mastery_status": "needs_review",
+  "extraction_status": "success",
+  "extraction_error": "",
+  "curriculum_links": [
+    {
+      "code": "AC9E9LA01",
+      "topic": ""
+    }
+  ],
+  "image_url": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325906920_Full Context.png",
+  "source_image_url": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/tests/hybrid_analysis/1769325882079_drought.png",
+  "crop_image_url": "https://storage.googleapis.com/scholars-alley-dev.firebasestorage.app/artifact_crops/TEST_USER_ID/1769325906920_Full Context.png",
+  "created_at": {
+    "_seconds": 1769325918,
+    "_nanoseconds": 670000000
+  }
+}
+✅ verified: '325' found in analysis.
+✅ TEST PASSED
