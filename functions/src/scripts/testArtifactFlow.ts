@@ -3,8 +3,9 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Inject API Key for Test
-process.env.OPENROUTER_API_KEY = "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";
+if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error('OPENROUTER_API_KEY environment variable must be set before running this script');
+}
 
 // Initialize Admin SDK *BEFORE* importing any other files that might use it
 if (admin.apps.length === 0) {
